@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { submitInvoice, validateInvoice } from "./helpers";
+import { useState, useEffect } from "react";
+import { submitInvoice, validateInvoice } from "../../Utils/helpers";
+import { Check, CircleAlert } from "lucide-react";
 
 export default function CreateInvoice() {
   const [invoice_name, setInvoiceName] = useState("");
@@ -7,6 +8,7 @@ export default function CreateInvoice() {
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(null);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -25,22 +27,24 @@ export default function CreateInvoice() {
 
     if (Object.keys(validationErrors).length === 0) {
       submitInvoice(invoice);
+      setSuccess(true);
     }
   }
 
+  // clear success banner after 3 seconds
+  useEffect(() => {
+    if (!success) return;
+    const timeout = setTimeout(() => setSuccess(null), 3000);
+    return () => clearTimeout(timeout);
+  }, [success]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+    <div className="min-h-screen flex flex-col gap-3 items-center justify-center bg-gray-50 p-6">
       <form
         onSubmit={handleSubmit}
         className="max-w-3xl w-full mx-auto p-6 bg-white rounded-md shadow-sm space-y-4"
       >
         <h2 className="text-2xl font-semibold text-center">Create Invoice</h2>
-
-        {Object.keys(errors).length > 0 && (
-          <div className="text-sm text-red-700 bg-red-50 p-2 rounded">
-            Please fix the errors below
-          </div>
-        )}
 
         <div>
           <label className="block text-sm">Invoice Name</label>
@@ -101,6 +105,27 @@ export default function CreateInvoice() {
           Create Invoice
         </button>
       </form>
+
+      {/* Message container: shows success and/or errors in one place */}
+      <div
+        className="mt-2 flex flex-col items-center gap-2"
+        role="status"
+        aria-live="polite"
+      >
+        {success && (
+          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded transition-all duration-3000">
+            <Check className="text-green-700" />
+            <span className="font-semibold">Invoice created successfully</span>
+          </div>
+        )}
+
+        {Object.keys(errors).length > 0 && (
+          <div className="text-sm text-red-700 bg-red-50 font-medium p-2 rounded inline-flex items-center gap-2">
+            <CircleAlert className="text-red-700" />
+            <span>Please fix the errors above</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
