@@ -12,6 +12,7 @@ export default function InvoiceTable({ invoice }) {
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
+            <TableCell>S.N</TableCell>
             <TableCell>Invoice Name</TableCell>
             <TableCell align="right">Customer Name</TableCell>
             <TableCell align="right">Price ($)</TableCell>
@@ -20,14 +21,13 @@ export default function InvoiceTable({ invoice }) {
         </TableHead>
         <TableBody>
           {invoice && invoice.length > 0 ? (
-            invoice.map((row) => (
+            invoice.map((row, index) => (
               <TableRow
                 key={row.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell component="th" scope="row">
-                  {row.invoice_name}
-                </TableCell>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{row.invoice_name}</TableCell>
                 <TableCell align="right">{row.customer_name}</TableCell>
                 <TableCell align="right">${row.price}</TableCell>
                 <TableCell align="right">{row.quantity} units</TableCell>
@@ -35,7 +35,7 @@ export default function InvoiceTable({ invoice }) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+              <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                 <span className="font-semibold text-xl">
                   No invoices yet...
                 </span>

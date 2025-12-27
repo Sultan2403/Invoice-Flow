@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { submitInvoice, validateInvoice } from "../../Utils/helpers";
+import { submitInvoice, validateInvoice } from "../../../Utils/helpers";
 import { Check, CircleAlert } from "lucide-react";
 
 export default function CreateInvoice() {
@@ -39,7 +39,7 @@ export default function CreateInvoice() {
   }, [success]);
 
   return (
-    <div className="min-h-screen flex flex-col gap-3 items-center justify-center bg-gray-50 p-6">
+    <div className="h-full w-full flex flex-col gap-3 items-center justify-center bg-gray-50 p-6">
       <form
         onSubmit={handleSubmit}
         className="max-w-3xl w-full mx-auto p-6 bg-white rounded-md shadow-sm space-y-4"
@@ -60,7 +60,7 @@ export default function CreateInvoice() {
         </div>
 
         <div>
-          <label className="block text-sm">Customer Name</label>
+          <label className="block text-sm">Customer Name (Full Name)</label>
           <input
             type="text"
             value={customer_name}
@@ -73,7 +73,7 @@ export default function CreateInvoice() {
         </div>
 
         <div>
-          <label className="block text-sm">Quantity</label>
+          <label className="block text-sm">Quantity (units)</label>
           <input
             type="number"
             value={quantity}
@@ -86,7 +86,7 @@ export default function CreateInvoice() {
         </div>
 
         <div>
-          <label className="block text-sm">Price</label>
+          <label className="block text-sm">Price ($)</label>
           <input
             type="number"
             value={price}

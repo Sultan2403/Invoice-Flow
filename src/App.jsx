@@ -1,12 +1,23 @@
 import "./App.css";
-import Create_Invoice from "./Components/Invoice/createInvoice";
-import InvoiceTable from "./Components/Invoice/invoiceCard";
+import Create_Invoice from "./Components/Secondary/Invoice/createInvoice";
+import InvoiceTable from "./Components/Secondary/Invoice/invoiceCard";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import Layout from "./Components/Main/Layout/layout";
+import Dashboard from "./Components/Secondary/Dashboard/dashboard";
 
 function App() {
   return (
     <>
-      <Create_Invoice />
-      <InvoiceTable invoice={JSON.parse(localStorage.getItem("invoices"))} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="invoices" element={<InvoiceTable />} />
+            <Route path="create-invoice" element={<Create_Invoice />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
