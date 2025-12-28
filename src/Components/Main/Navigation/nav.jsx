@@ -1,24 +1,81 @@
+import {
+  FilesIcon,
+  HomeIcon,
+  PlusIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react"; 
 
 export default function Nav() {
+  const [open, setOpen] = useState(() => {
+    try {
+      const raw = localStorage.getItem("navOpen");
+      return raw === null ? true : raw === "1";
+    } catch (e) {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("navOpen", open ? "1" : "0");
+    } catch (e) {
+      // ignore
+    }
+  }, [open]);
+
   return (
-    <nav className="w-64 h-screen bg-blue-600 text-white flex flex-col p-6">
+    <nav
+      className={`h-screen bg-gradient-to-b from-sky-600 to-sky-700 text-white flex flex-col p-4 shadow-lg transition-all duration-200 ${
+        open ? "w-72" : "w-20"
+      }`}
+    >
       {/* Logo / App Name */}
-      <NavLink to="/" className="text-2xl font-bold mb-8">
-        Invoice Flow
-      </NavLink>
+      <div className="mb-6 flex items-center justify-between">
+        <NavLink to="/" className="flex items-center gap-3">
+          <div
+            className={`w-10 h-10 bg-white/10 rounded flex items-center justify-center text-xl font-bold`}
+          >
+            IF
+          </div>
+          <div className={`${open ? "block" : "hidden"}`}>
+            <div className="text-xl font-bold leading-4">Invoice Flow</div>
+            <div className="text-xs text-white/90">Manage your invoices</div>
+          </div>
+        </NavLink>
+
+        <button
+          onClick={() => setOpen((s) => !s )}
+          aria-label={open ? "Collapse navigation" : "Expand navigation"}
+          title={open ? "Collapse" : "Expand"}
+          className="p-1 rounded hover:bg-white/10 transition"
+        >
+          {open ? <ChevronLeft /> : <ChevronRight />}
+        </button>
+      </div>
 
       {/* Links */}
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-2">
         <li>
           <NavLink
             to="/"
             end
             className={({ isActive }) =>
-              isActive ? "font-semibold underline" : "opacity-90"
+              isActive
+                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                    open ? "" : "justify-center"
+                  }`
+                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                    open ? "" : "justify-center"
+                  }`
             }
           >
-            Dashboard
+            <span className="text-lg">
+              <HomeIcon />
+            </span>
+            <span className={`${open ? "" : "hidden"}`}>Dashboard</span>
           </NavLink>
         </li>
 
@@ -26,10 +83,19 @@ export default function Nav() {
           <NavLink
             to="/invoices"
             className={({ isActive }) =>
-              isActive ? "font-semibold underline" : "opacity-90"
+              isActive
+                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                    open ? "" : "justify-center"
+                  }`
+                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                    open ? "" : "justify-center"
+                  }`
             }
           >
-            Invoices
+            <span className="text-lg">
+              <FilesIcon />
+            </span>
+            <span className={`${open ? "" : "hidden"}`}>Invoices</span>
           </NavLink>
         </li>
 
@@ -37,13 +103,35 @@ export default function Nav() {
           <NavLink
             to="/create-invoice"
             className={({ isActive }) =>
-              isActive ? "font-semibold underline" : "opacity-90"
+              isActive
+                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                    open ? "" : "justify-center"
+                  }`
+                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                    open ? "" : "justify-center"
+                  }`
             }
           >
-            Create Invoice
+            <span className="text-lg">
+              <PlusIcon />
+            </span>
+            <span className={`${open ? "" : "hidden"}`}>Create Invoice</span>
           </NavLink>
         </li>
       </ul>
+
+      <div className={`mt-auto pt-6 ${open ? "" : "px-2"}`}>
+        <div className={`${open ? "text-xs text-white/80 mb-2" : "hidden"}`}>
+          Account
+        </div>
+        <button
+          className={`w-full bg-white/10 hover:bg-white/20 px-3 py-2 rounded-md text-sm transition ${
+            open ? "text-sm" : "p-2"
+          }`}
+        >
+          {open ? "Sign out" : ""}
+        </button>
+      </div>
     </nav>
   );
 }

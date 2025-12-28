@@ -3,9 +3,9 @@ import Nav from "../Navigation/nav";
 
 export default function Layout() {
   return (
-    <div className="w-screen bg-gray-100 flex">
+    <div className="w-screen bg-gray-100 flex min-h-screen">
       <Nav />
-      <main className="container mx-auto w-[80%] p-10 flex justify-center items-center">
+      <main className="flex-1 p-10 flex justify-center items-center">
         <Outlet />
       </main>
     </div>

@@ -5,6 +5,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { NavLink } from "react-router-dom";
 
 export default function InvoiceTable({ invoice }) {
   return (
@@ -36,9 +37,16 @@ export default function InvoiceTable({ invoice }) {
           ) : (
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                <span className="font-semibold text-xl">
-                  No invoices yet...
-                </span>
+                <div className="flex-col flex gap-3 font-sans">
+                  <span className="font-semibold text-xl">
+                    No invoices yet...
+                  </span>
+                  <NavLink to={"/create-invoice"}>
+                    <button className="text-xl p-4 hover:bg-blue-700 bg-blue-600 text-white font font-semibold rounded-lg ">
+                      Create an invoice to get started
+                    </button>
+                  </NavLink>
+                </div>
               </TableCell>
             </TableRow>
           )}
