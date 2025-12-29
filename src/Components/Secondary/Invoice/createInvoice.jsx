@@ -136,16 +136,16 @@ export default function CreateInvoice() {
           </div>
 
           <div>
-            <label className="block text-sm">Price ($)</label>
-            <input
+            <TextField
+              label="Price ($)"
+              id="price"
               type="number"
+              error={errors.price}
+              helperText={errors.price}
               value={price}
               onChange={(e) => handleFieldChange("price", e.target.value)}
-              className="mt-1 w-full border p-2 rounded"
-            />
-            {errors.price && (
-              <p className="text-xs text-red-600 mt-1">{errors.price}</p>
-            )}
+              fullWidth
+            ></TextField>
           </div>
 
           <div className="flex justify-center">
