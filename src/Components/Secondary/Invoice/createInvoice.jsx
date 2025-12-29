@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { submitInvoice, validateInvoice } from "../../../Utils/helpers";
-import { Check, CircleAlert, FilePlus } from "lucide-react";
+import {
+  Check,
+  CircleAlert,
+  FilePlus,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react";
 import SimpleModal from "../../UI/Modal/modal";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
@@ -15,26 +21,40 @@ export default function CreateInvoice() {
   const [success, setSuccess] = useState(null);
   const [feedback, setFeedback] = useState(false);
   const [touched, setTouched] = useState({});
+  const [items, setItems] = useState([]);
+  const [draftItem, setDraftItems] = useState(null);
+  const [draftErrs, setDraftErrors] = useState({});
 
-  // Validate a single field as the user types and update that field's error
-  function handleFieldChange(field, value) {
-    // update local state
-    if (field === "invoice_name") setInvoiceName(value);
-    if (field === "customer_name") setCustomerName(value);
-    if (field === "quantity") setQuantity(value);
-    if (field === "price") setPrice(value);
+  function AddRow() {
+    setDraftItems({ description: "", quantity: 0, price: 0 });
+  }
 
-    setTouched((s) => ({ ...s, [field]: true }));
+  function ValidateDraft() {
+    if (!draftItem.description.trim()) {
+      draftErrs.description = "Item description is required";
+    }
+    if (draftItem.quantity <= 0) {
+      draftErrs.quantity = "Quantity must be greater than zero";
+    }
+    if (draftItem.price <= 0) {
+      draftErrs.price = "Price must be greater than zero";
+    }
 
-    // Run the per-field validator exposed on validateInvoice
-    const fieldError = validateInvoice.field(field, value);
+    setDraftErrors(draftErrs);
+    return draftErrs;
+  }
 
-    setErrors((prev) => {
-      const next = { ...prev };
-      if (fieldError) next[field] = fieldError;
-      else delete next[field];
-      return next;
-    });
+  function SaveDraft() {
+    ValidateDraft();
+    if (Object.keys(draftErrs).length > 0) return;
+    setItems((prevItems) => [...prevItems, draftItem]);
+    console.log(items);
+
+    setDraftItems(null);
+  }
+
+  function DeleteDraft() {
+    setDraftItems(null);
   }
 
   function handleSubmit(e) {
@@ -101,9 +121,7 @@ export default function CreateInvoice() {
               error={Boolean(errors.invoice_name)}
               helperText={errors.invoice_name || ""}
               value={invoice_name}
-              onChange={(e) =>
-                handleFieldChange("invoice_name", e.target.value)
-              }
+              onChange={(e) => setInvoiceName(e.target.value)}
               fullWidth
             ></TextField>
           </div>
@@ -115,37 +133,82 @@ export default function CreateInvoice() {
               error={errors.customer_name}
               helperText={errors.customer_name}
               value={customer_name}
-              onChange={(e) =>
-                handleFieldChange("customer_name", e.target.value)
-              }
+              onChange={(e) => setCustomerName(e.target.value)}
               fullWidth
             ></TextField>
           </div>
 
           <div>
-            <TextField
-              label="Quantity (units)"
-              id="quantity"
-              type="number"
-              error={errors.quantity}
-              helperText={errors.quantity}
-              value={quantity}
-              onChange={(e) => handleFieldChange("quantity", e.target.value)}
-              fullWidth
-            ></TextField>
+            {draftItem && (
+              <div className="grid grid-cols-6">
+                <div>
+                  <TextField
+                    label="Item Description"
+                    error={draftErrs.description || false}
+                    helperText={draftErrs.description}
+                    onChange={(e) =>
+                      setDraftItems({
+                        ...draftItem,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <TextField
+                    label="Quantity (units)"
+                    type="number"
+                    onChange={(e) =>
+                      setDraftItems({ ...draftItem, quantity: +e.target.value })
+                    }
+                    error={draftErrs.quantity}
+                    helperText={draftErrs.quantity}
+                  />
+                </div>
+                <div>
+                  <TextField
+                    label="Price ($)"
+                    type="number"
+                    onChange={(e) =>
+                      setDraftItems({ ...draftItem, price: +e.target.value })
+                    }
+                    error={draftErrs.price}
+                    helperText={draftErrs.price}
+                  />
+                </div>
+                <div>
+                  <Button
+                    onClick={SaveDraft}
+                    startIcon={<PlusIcon />}
+                    variant="outlined"
+                    size="medium"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    onClick={DeleteDraft}
+                    startIcon={<Trash2Icon />}
+                    className="text-white bg-red-600"
+                    variant="text"
+                    size="medium"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
-            <TextField
-              label="Price ($)"
-              id="price"
-              type="number"
-              error={errors.price}
-              helperText={errors.price}
-              value={price}
-              onChange={(e) => handleFieldChange("price", e.target.value)}
-              fullWidth
-            ></TextField>
+            <Button
+              startIcon={<PlusIcon />}
+              onClick={AddRow}
+              variant="outlined"
+              disabled={draftItem}
+              size="medium"
+            >
+              Add Item
+            </Button>
           </div>
 
           <div className="flex justify-center">

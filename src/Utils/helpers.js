@@ -1,7 +1,7 @@
 // -------------------- Invoice Helpers -----------------------------------------
 
 export function validateInvoice(invoice) {
-  const { invoice_name, customer_name, quantity, price } = invoice || {};
+  const { invoice_name, customer_name } = invoice || {};
 
   const errors = {};
 
@@ -17,18 +17,6 @@ export function validateInvoice(invoice) {
     errors.customer_name = "Customer name is required";
   } else if (!/^[a-zA-z\s]+$/.test(customer_name)) {
     errors.customer_name = "Customer name must only include letters";
-  }
-
-  // quantity - ensure numeric comparison
-  const q = Number(quantity);
-  if (!quantity || Number.isNaN(q) || q < 1) {
-    errors.quantity = "Quantity must be at least 1";
-  }
-
-  // price - ensure numeric comparison
-  const p = Number(price);
-  if (!price || Number.isNaN(p) || p < 1) {
-    errors.price = "Price must be greater than 0";
   }
 
   return errors;
@@ -48,20 +36,6 @@ validateInvoice.field = function fieldValidator(fieldName, value) {
       if (!value?.trim()) return "Customer name is required";
       if (!/^[a-zA-z\s]+$/.test(value.trim()))
         return "Customer name must only include letters";
-      return undefined;
-    }
-
-    case "quantity": {
-      const n = Number(value);
-      if (!value || Number.isNaN(n) || n < 1)
-        return "Quantity must be at least 1";
-      return undefined;
-    }
-
-    case "price": {
-      const n = Number(value);
-      if (!value || Number.isNaN(n) || n < 1)
-        return "Price must be greater than 0";
       return undefined;
     }
 
