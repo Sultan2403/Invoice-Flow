@@ -55,10 +55,12 @@ export default function CreateInvoice() {
     console.log(items);
 
     setDraftItems(null);
+    setDraftErrors({});
   }
 
   function DeleteDraft() {
     setDraftItems(null);
+    setDraftErrors({});
   }
 
   function EditItem(index) {
@@ -175,6 +177,7 @@ export default function CreateInvoice() {
                   label="Quantity"
                   type="number"
                   value={draftItem.quantity}
+                  defaultValue={1}
                   error={Boolean(draftErrs.quantity)}
                   helperText={draftErrs.quantity}
                   onChange={(e) =>
@@ -189,6 +192,7 @@ export default function CreateInvoice() {
                   label="Price ($)"
                   type="number"
                   value={draftItem.price}
+                  defaultValue={null}
                   error={Boolean(draftErrs.price)}
                   helperText={draftErrs.price}
                   onChange={(e) =>
@@ -213,6 +217,7 @@ export default function CreateInvoice() {
                     startIcon={<Trash2Icon />}
                     className="text-white bg-red-600"
                     variant="text"
+                    color="error"
                   >
                     Cancel
                   </Button>
@@ -242,26 +247,26 @@ export default function CreateInvoice() {
                   <div>${item.price.toFixed(2)}</div>
                   <div>${(item.price * item.quantity).toFixed(2)}</div>
 
-                  <div>
+                  <div className="col-span-3 flex gap-3">
                     <Button
-                      onClick={SaveDraft}
+                      onClick={() => EditItem(index)}
                       startIcon={<PlusIcon />}
                       variant="outlined"
                       size="medium"
                       className="bg-gray-100 text-gray-800 hover:bg-gray-200"
                     >
-                      Save
+                      Edit
                     </Button>
 
                     <Button
-                      onClick={DeleteDraft}
+                      onClick={() => removeItem(index)}
                       startIcon={<Trash2Icon />}
                       variant="contained"
                       size="medium"
                       color="error"
                       className="bg-red-600 text-white hover:bg-red-700"
                     >
-                      Cancel
+                      Remove
                     </Button>
                   </div>
                 </div>
