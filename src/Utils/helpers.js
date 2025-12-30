@@ -52,3 +52,9 @@ export function submitInvoice(invoice) {
 
   localStorage.setItem(INVOICE_KEY, JSON.stringify(updated));
 }
+
+export function getInvoices() {
+  const INVOICE_KEY = "invoices";
+  const invoice = JSON.parse(localStorage.getItem(INVOICE_KEY)) || [];
+  return invoice;
+}

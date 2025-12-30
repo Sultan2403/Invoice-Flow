@@ -9,49 +9,51 @@ import { NavLink } from "react-router-dom";
 
 export default function InvoiceTable({ invoice }) {
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>S.N</TableCell>
-            <TableCell>Invoice Name</TableCell>
-            <TableCell align="right">Customer Name</TableCell>
-            <TableCell align="right">Price ($)</TableCell>
-            <TableCell align="right">Quantity (units)</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {invoice && invoice.length > 0 ? (
-            invoice.map((row, index) => (
-              <TableRow
-                key={row.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{row.invoice_name}</TableCell>
-                <TableCell align="right">{row.customer_name}</TableCell>
-                <TableCell align="right">${row.price}</TableCell>
-                <TableCell align="right">{row.quantity} units</TableCell>
-              </TableRow>
-            ))
-          ) : (
+    <div className="overflow-y-auto h-full w-full">
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                <div className="flex-col flex gap-3 font-sans">
-                  <span className="font-semibold text-xl">
-                    No invoices yet...
-                  </span>
-                  <NavLink to={"/create-invoice"}>
-                    <button className="text-xl p-4 hover:bg-blue-700 bg-blue-600 text-white font font-semibold rounded-lg ">
-                      Create an invoice to get started
-                    </button>
-                  </NavLink>
-                </div>
-              </TableCell>
+              <TableCell>S.N</TableCell>
+              <TableCell>Invoice Name</TableCell>
+              <TableCell align="right">Customer Name</TableCell>
+              <TableCell align="right">Price ($)</TableCell>
+              <TableCell align="right">Quantity (units)</TableCell>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {invoice && invoice.length > 0 ? (
+              invoice.map((row, index) => (
+                <TableRow
+                  key={row.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{row.invoice_name}</TableCell>
+                  <TableCell align="right">{row.customer_name}</TableCell>
+                  <TableCell align="right">${row.price}</TableCell>
+                  <TableCell align="right">{row.quantity} units</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                  <div className="flex-col flex gap-3 font-sans">
+                    <span className="font-semibold text-xl">
+                      No invoices yet...
+                    </span>
+                    <NavLink to={"/create-invoice"}>
+                      <button className="text-xl p-4 hover:bg-blue-700 bg-blue-600 text-white font font-semibold rounded-lg ">
+                        Create an invoice to get started
+                      </button>
+                    </NavLink>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }

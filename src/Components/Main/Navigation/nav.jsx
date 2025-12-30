@@ -6,7 +6,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 
 export default function Nav() {
   const [open, setOpen] = useState(() => {
@@ -33,7 +33,7 @@ export default function Nav() {
       }`}
     >
       {/* Logo / App Name */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between ">
         <NavLink to="/" className="flex items-center gap-3">
           <div
             className={`w-10 h-10 bg-white/10 rounded flex items-center justify-center text-xl font-bold`}
@@ -47,7 +47,7 @@ export default function Nav() {
         </NavLink>
 
         <button
-          onClick={() => setOpen((s) => !s )}
+          onClick={() => setOpen((s) => !s)}
           aria-label={open ? "Collapse navigation" : "Expand navigation"}
           title={open ? "Collapse" : "Expand"}
           className="p-1 rounded hover:bg-white/10 transition"
