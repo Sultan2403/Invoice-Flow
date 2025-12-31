@@ -63,14 +63,14 @@ export default function CreateInvoice() {
     setDraftErrors({});
   }
 
-  function EditItem(index) {
-    const itemToEdit = items[index];
+  function EditItem(id) {
+    const itemToEdit = items.find((item) => item.id === id);
     setDraftItems(itemToEdit);
-    setItems((prevItems) => prevItems.filter((_, i) => i !== index));
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   }
 
-  function removeItem(index) {
-    setItems((prevItems) => prevItems.filter((_, i) => i !== index));
+  function removeItem(id) {
+    setItems((prevItems) => prevItems.filter((_, i) => i !== i.id));
   }
 
   function handleSubmit(e) {
@@ -249,7 +249,7 @@ export default function CreateInvoice() {
 
                   <div className="col-span-3 flex gap-3">
                     <Button
-                      onClick={() => EditItem(index)}
+                      onClick={() => EditItem(item.id)}
                       startIcon={<PlusIcon />}
                       variant="outlined"
                       size="medium"
@@ -259,7 +259,7 @@ export default function CreateInvoice() {
                     </Button>
 
                     <Button
-                      onClick={() => removeItem(index)}
+                      onClick={() => removeItem(item.id)}
                       startIcon={<Trash2Icon />}
                       variant="contained"
                       size="medium"
