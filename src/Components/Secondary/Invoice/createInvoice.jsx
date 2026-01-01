@@ -8,6 +8,7 @@ import {
   PlusIcon,
   Trash2,
   Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import SimpleModal from "../../UI/Modal/modal";
 import FormControl from "@mui/material/FormControl";
@@ -16,6 +17,7 @@ import Button from "@mui/material/Button";
 
 export default function CreateInvoice() {
   const [invoice_name, setInvoiceName] = useState("");
+  const [itemName, setItemName] = useState("");
   const [customer_name, setCustomerName] = useState("");
   const [customer_email, setCustomerEmail] = useState("");
   const [customer_address, setCustomerAddress] = useState("");
@@ -36,14 +38,17 @@ export default function CreateInvoice() {
 
   function AddTax() {
     setHasTax(true);
+  }
 
-    
+  function RemoveTax() {
+    setHasTax(false);
+    setTax(0);
   }
 
   // ------------------------------ ITEMS LOGIC.......... ----------------------------------
 
   function AddRow() {
-    setDraftItems({ description: "", quantity: 1, price: 0 });
+    setDraftItems({ itemName, description: "", quantity: 1, price: 0 });
   }
 
   function ValidateDraft() {
@@ -189,6 +194,16 @@ export default function CreateInvoice() {
               <h3 className="font-semibold">Add / Edit Item</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
+                {" "}
+                <TextField
+                  label="Item Name"
+                  id="item-name"
+                  error={Boolean(errors.itemName)}
+                  helperText={errors.itemName || ""}
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  fullWidth
+                />
                 <TextField
                   className="md:col-span-2"
                   label="Item Description"
@@ -202,11 +217,10 @@ export default function CreateInvoice() {
                     })
                   }
                 />
-
                 <TextField
                   label="Quantity (units)"
                   type="number"
-                  value={draftItem.quantity || ''}
+                  value={draftItem.quantity || ""}
                   error={Boolean(draftErrs.quantity)}
                   helperText={draftErrs.quantity}
                   onChange={(e) =>
@@ -216,11 +230,10 @@ export default function CreateInvoice() {
                     })
                   }
                 />
-
                 <TextField
                   label="Price ($)"
                   type="number"
-                  value={draftItem.price || ''}
+                  value={draftItem.price || ""}
                   error={Boolean(draftErrs.price)}
                   helperText={draftErrs.price}
                   onChange={(e) =>
@@ -230,18 +243,22 @@ export default function CreateInvoice() {
                     })
                   }
                 />
-
                 {hasTax && (
-                  <TextField
-                    label="Tax Rate (%)"
-                    type="number"
-                    error={Boolean(errors.tax)}
-                    helperText={errors.tax || ""}
-                    value={tax || ''}
-                    onChange={(e) => setTax(Number(e.target.value))}
-                  />
+                  <>
+                    {" "}
+                    <TextField
+                      label="Tax Rate (%)"
+                      type="number"
+                      error={Boolean(errors.tax)}
+                      helperText={errors.tax || ""}
+                      value={tax || ""}
+                      onChange={(e) => setTax(Number(e.target.value))}
+                    />
+                    <Button aria-label="Cancel" onClick={RemoveTax}>
+                      <XIcon />
+                    </Button>
+                  </>
                 )}
-
                 <div className="flex items-end gap-2 md:col-span-2">
                   <Button
                     onClick={SaveDraft}
