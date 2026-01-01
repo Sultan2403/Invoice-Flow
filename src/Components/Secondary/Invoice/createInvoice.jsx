@@ -15,14 +15,13 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
 export default function CreateInvoice() {
-  const date = new Date().toISOString().split("T")[0];
   const [invoice_name, setInvoiceName] = useState("");
   const [customer_name, setCustomerName] = useState("");
   const [customer_email, setCustomerEmail] = useState("");
   const [customer_address, setCustomerAddress] = useState("");
   const [tax, setTax] = useState(0);
-  const [issueDate, setIssueDate] = useState(date);
-  const [dueDate, setDueDate] = useState("");
+  const [hasTax, setHasTax] = useState(false);
+  const [dueDate, setDueDate] = useState(null);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(null);
   const [feedback, setFeedback] = useState(false);
@@ -35,13 +34,16 @@ export default function CreateInvoice() {
     0
   );
 
+  function AddTax() {
+    setHasTax(true);
+
+    
+  }
+
+  // ------------------------------ ITEMS LOGIC.......... ----------------------------------
+
   function AddRow() {
-    setDraftItems({
-      id: crypto.randomUUID(),
-      description: "",
-      quantity: 0,
-      price: 0,
-    });
+    setDraftItems({ description: "", quantity: 1, price: 0 });
   }
 
   function ValidateDraft() {
@@ -62,15 +64,16 @@ export default function CreateInvoice() {
 
   function SaveDraft() {
     if (Object.keys(ValidateDraft()).length > 0) return;
-    draftItem.total = draftItem.quantity * draftItem.price;
     setItems((prevItems) => [...prevItems, draftItem]);
 
     setDraftItems(null);
+    setHasTax(false);
     setDraftErrors({});
   }
 
   function DeleteDraft() {
     setDraftItems(null);
+    setHasTax(false);
     setDraftErrors({});
   }
 
@@ -81,12 +84,10 @@ export default function CreateInvoice() {
   }
 
   function removeItem(id) {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setItems((prevItems) => prevItems.filter((_, i) => i !== i.id));
   }
 
   function handleSubmit(e) {
-    // TODO: Add item tax logic
-
     e.preventDefault();
 
     const customer = {
@@ -104,7 +105,7 @@ export default function CreateInvoice() {
       createdAt: new Date().toISOString(),
       invoice_name,
       items,
-      inv_status,
+      status,
 
       customer, // Customer Details
 
@@ -161,73 +162,25 @@ export default function CreateInvoice() {
 
           {/* ===== Invoice Meta ===== */}
           <section className="space-y-4">
-            <div>
-              <h3>Invoice Data</h3>
-              <TextField
-                label="Invoice Name"
-                id="invoice-name"
-                error={Boolean(errors.invoice_name)}
-                helperText={errors.invoice_name || ""}
-                value={invoice_name}
-                onChange={(e) => setInvoiceName(e.target.value)}
-                fullWidth
-              />{" "}
-              <TextField
-                label="Issue Date"
-                type="date"
-                value={issueDate}
-                fullWidth
-                margin="normal"
-                slotProps={{
-                  htmlInput: { min: date },
-                  inputLabel: { shrink: true },
-                }}
-                onChange={(e) => setIssueDate(e.target.value)}
-              />
-              <TextField
-                label="Due Date"
-                type="date"
-                value={dueDate}
-                fullWidth
-                margin="normal"
-                slotProps={{
-                  htmlInput: { min: issueDate },
-                  inputLabel: { shrink: true },
-                }}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
+            <TextField
+              label="Invoice Name"
+              id="invoice-name"
+              error={Boolean(errors.invoice_name)}
+              helperText={errors.invoice_name || ""}
+              value={invoice_name}
+              onChange={(e) => setInvoiceName(e.target.value)}
+              fullWidth
+            />
 
-            <div>
-              <h3>Customer Data</h3>
-              <TextField
-                label="Customer Name"
-                id="customer-name"
-                error={Boolean(errors.customer_name)}
-                helperText={errors.customer_name}
-                value={customer_name}
-                onChange={(e) => setCustomerName(e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Customer Email"
-                id="customer-email"
-                error={Boolean(errors.customer_email)}
-                helperText={errors.customer_email}
-                value={customer_email}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Customer Address (Optional)"
-                id="customer-address"
-                error={Boolean(errors.customer_address)}
-                helperText={errors.customer_address}
-                value={customer_address}
-                onChange={(e) => setCustomerAddress(e.target.value)}
-                fullWidth
-              />
-            </div>
+            <TextField
+              label="Customer Name"
+              id="customer-name"
+              error={Boolean(errors.customer_name)}
+              helperText={errors.customer_name}
+              value={customer_name}
+              onChange={(e) => setCustomerName(e.target.value)}
+              fullWidth
+            />
           </section>
 
           {/* ===== Draft Item Editor ===== */}
@@ -251,10 +204,10 @@ export default function CreateInvoice() {
                 />
 
                 <TextField
-                  label="Quantity"
+                  label="Quantity (units)"
                   type="number"
+                  value={draftItem.quantity || ''}
                   error={Boolean(draftErrs.quantity)}
-                  value={draftItem.quantity || ""}
                   helperText={draftErrs.quantity}
                   onChange={(e) =>
                     setDraftItems({
@@ -267,8 +220,8 @@ export default function CreateInvoice() {
                 <TextField
                   label="Price ($)"
                   type="number"
+                  value={draftItem.price || ''}
                   error={Boolean(draftErrs.price)}
-                  value={draftItem.price || ""}
                   helperText={draftErrs.price}
                   onChange={(e) =>
                     setDraftItems({
@@ -278,6 +231,17 @@ export default function CreateInvoice() {
                   }
                 />
 
+                {hasTax && (
+                  <TextField
+                    label="Tax Rate (%)"
+                    type="number"
+                    error={Boolean(errors.tax)}
+                    helperText={errors.tax || ""}
+                    value={tax || ''}
+                    onChange={(e) => setTax(Number(e.target.value))}
+                  />
+                )}
+
                 <div className="flex items-end gap-2 md:col-span-2">
                   <Button
                     onClick={SaveDraft}
@@ -285,8 +249,17 @@ export default function CreateInvoice() {
                     variant="outlined"
                   >
                     Save
+                  </Button>{" "}
+                  <Button
+                    onClick={AddTax}
+                    startIcon={<PlusIcon />}
+                    variant="contained"
+                    size="medium"
+                    color="info"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Add tax
                   </Button>
-
                   <Button
                     onClick={DeleteDraft}
                     startIcon={<Trash2Icon />}
@@ -325,7 +298,7 @@ export default function CreateInvoice() {
                   <div className="col-span-3 flex gap-3">
                     <Button
                       onClick={() => EditItem(item.id)}
-                      startIcon={<EditIcon />}
+                      startIcon={<PlusIcon />}
                       variant="outlined"
                       size="medium"
                       className="bg-gray-100 text-gray-800 hover:bg-gray-200"
@@ -349,9 +322,10 @@ export default function CreateInvoice() {
             </section>
           )}
 
+          {/* ===== Total ===== */}
           {items.length > 0 && (
-            <div className="text-right font-semibold">
-              Subtotal: ${subtotal.toFixed(2)}
+            <div className="text-right font-bold text-lg">
+              Total Amount: ${total.toFixed(2)}
             </div>
           )}
 
