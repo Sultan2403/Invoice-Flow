@@ -1,3 +1,5 @@
+// TODO: Fix tax logic, it's shit right now. :)
+
 import { useState, useEffect } from "react";
 import { submitInvoice, validateInvoice } from "../../../Utils/helpers";
 import {
@@ -16,14 +18,17 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
 export default function CreateInvoice() {
+  const today = new Date().toISOString().split("T")[0];
   const [invoice_name, setInvoiceName] = useState("");
   const [itemName, setItemName] = useState("");
   const [customer_name, setCustomerName] = useState("");
   const [customer_email, setCustomerEmail] = useState("");
   const [customer_address, setCustomerAddress] = useState("");
-  const [tax, setTax] = useState(0);
+  const [tax, setTax] = useState(null);
   const [hasTax, setHasTax] = useState(false);
+  const [issueDate, setIssueDate] = useState(today);
   const [dueDate, setDueDate] = useState(null);
+
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(null);
   const [feedback, setFeedback] = useState(false);
@@ -186,6 +191,48 @@ export default function CreateInvoice() {
               onChange={(e) => setCustomerName(e.target.value)}
               fullWidth
             />
+
+            <TextField
+              label="Customer Email "
+              id="customer-email"
+              value={customer_email}
+              error={Boolean(errors.customer_email)}
+              helperText={errors.customer_email}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              fullWidth
+            />
+
+            <TextField
+              label="Customer Address"
+              id="customer-address"
+              value={customer_address}
+              onChange={(e) => setCustomerAddress(e.target.value)}
+              fullWidth
+              slotProps={{ htmlInput: { min: today } }}
+              error={Boolean(errors.customer_address)}
+              helperText={errors.customer_address}
+            />
+
+            <TextField
+              label={"Due Date"}
+              type="date"
+              fullWidth
+              slotProps={{
+                htmlInput: { min: issueDate },
+                inputLabel: { shrink: true },
+              }}
+              value={dueDate || ""}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+
+            <TextField
+              label={"Issue Date"}
+              slotProps={{ inputLabel: { shrink: true } }}
+              type="date"
+              fullWidth
+              value={issueDate || ""}
+              onChange={(e) => setIssueDate(e.target.value)}
+            />
           </section>
 
           {/* ===== Draft Item Editor ===== */}
@@ -194,7 +241,6 @@ export default function CreateInvoice() {
               <h3 className="font-semibold">Add / Edit Item</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
-                {" "}
                 <TextField
                   label="Item Name"
                   id="item-name"
@@ -244,7 +290,7 @@ export default function CreateInvoice() {
                   }
                 />
                 {hasTax && (
-                  <>
+                  /*<SimpleModal open={hasTax} onClose={null} children={ >*/ <>
                     {" "}
                     <TextField
                       label="Tax Rate (%)"
@@ -258,6 +304,13 @@ export default function CreateInvoice() {
                       <XIcon />
                     </Button>
                   </>
+
+                  // </SimpleModal>
+                )}
+                {tax && (
+                  <div>
+                    Tax: {tax}% / {tax / 100}
+                  </div>
                 )}
                 <div className="flex items-end gap-2 md:col-span-2">
                   <Button
