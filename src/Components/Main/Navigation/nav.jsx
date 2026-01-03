@@ -29,7 +29,7 @@ export default function Nav() {
   return (
     <nav
       className={`h-screen bg-gradient-to-b from-sky-600 to-sky-700 text-white flex flex-col p-4 shadow-lg transition-all duration-200 ${
-        open ? "w-72" : "w-20"
+        open ? "w-[20%]" : "w-[10%]"
       }`}
     >
       {/* Logo / App Name */}

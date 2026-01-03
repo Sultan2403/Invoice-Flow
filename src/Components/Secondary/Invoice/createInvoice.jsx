@@ -8,6 +8,7 @@ import {
   EditIcon,
   FilePlus,
   PlusIcon,
+  Star,
   Trash2,
   Trash2Icon,
   XIcon,
@@ -18,46 +19,129 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
 export default function CreateInvoice() {
-  const today = new Date().toISOString().split("T")[0];
+  // Invoice metadata
+
   const [invoice_name, setInvoiceName] = useState("");
   const [itemName, setItemName] = useState("");
   const [customer_name, setCustomerName] = useState("");
   const [customer_email, setCustomerEmail] = useState("");
   const [customer_address, setCustomerAddress] = useState("");
-  const [tax, setTax] = useState(null);
-  const [hasTax, setHasTax] = useState(false);
-  const [issueDate, setIssueDate] = useState(today);
-  const [dueDate, setDueDate] = useState(null);
 
-  const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState(null);
-  const [feedback, setFeedback] = useState(false);
+  // Items and item edit state
+
   const [items, setItems] = useState([]);
   const [draftItem, setDraftItems] = useState(null);
   const [draftErrs, setDraftErrors] = useState({});
 
+  // Tax Data
+
+  const [localTax, setLocalTax] = useState(0);
+  const [globalTax, setGlobalTax] = useState(0);
+  const [hasLocalTax, setHasLocalTax] = useState(false);
+  const [hasGlobalTax, setHasGlobalTax] = useState(false);
+
+  // Dates state
+
+  const today = new Date().toISOString().split("T")[0];
+  const [issueDate, setIssueDate] = useState(today);
+  const [dueDate, setDueDate] = useState(null);
+
+  // Feedback states
+
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(null);
+  const [feedback, setFeedback] = useState(false);
+
+  // Helpers :)
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Total and tax calculations
+
   const subtotal = items.reduce(
     (sum, item) => sum + item.quantity * item.price,
     0
-  );
+  ); // This is the combined total of all individual items.
 
-  function AddTax() {
-    setHasTax(true);
+  // ------------------------------ TAX LOGIC.......... ----------------------------------
+
+  const localTaxTotal = items.reduce((sum, item) => sum + item.tax, 0); // Total local tax calc
+
+  const totalTax = localTaxTotal + globalTax; // Total tax calc for global and local tax
+
+  const total = subtotal + (subtotal * totalTax) / 100; // Final total calc
+
+  // ----------------------------------- Tax functions.....--------------------------------------------
+
+  function AddLocalTax() {
+    setHasLocalTax(true);
   }
 
-  function RemoveTax() {
-    setHasTax(false);
-    setTax(0);
+  function RemoveLocalTax() {
+    setHasLocalTax(false);
+    setLocalTax(0);
+  }
+
+  function AddGlobalTax() {
+    setHasGlobalTax(true);
+  }
+
+  function RemoveGlobalTax() {
+    setHasGlobalTax(false);
+    setGlobalTax(0);
   }
 
   // ------------------------------ ITEMS LOGIC.......... ----------------------------------
 
   function AddRow() {
-    setDraftItems({ itemName, description: "", quantity: 1, price: 0 });
+    setDraftItems({
+      id: crypto.randomUUID(),
+      itemName,
+      tax: localTax,
+      description: "",
+      quantity: 1,
+      price: 0,
+    });
   }
+
+  function removeItem() {
+    setItems((prevItems) => prevItems.filter((_, i) => i !== i.id));
+  }
+
+  //-------------------------------- ITEM EDIT LOGIC.......... ----------------------------------
+
+  function StartItemEdit(id) {
+    const itemToEdit = items.find((item) => item.id === id);
+    setDraftItems(itemToEdit);
+
+    setIsEditing(true);
+  }
+
+  function actuallyEditItem() {
+    if (Object.keys(ValidateDraft()).length > 0) return;
+
+    setItems((prevItems) => [...prevItems, draftItem]);
+
+    setDraftItems(null);
+    setIsEditing(false);
+    setDraftErrors({});
+  }
+
+  function CancelEdits() {
+    setDraftItems(null);
+    setIsEditing(false);
+    setDraftErrors({});
+  }
+
+  // ------------------------------ DRAFT ITEM LOGIC.......... ----------------------------------
+
+  // -------------------- VALIDATION LOGIC.......... --------------------------
 
   function ValidateDraft() {
     const errs = {};
+    if (!draftItem.itemName.trim()) {
+      errs.itemName = "Item name is required";
+    }
     if (!draftItem.description.trim()) {
       errs.description = "Item description is required";
     }
@@ -67,34 +151,37 @@ export default function CreateInvoice() {
     if (draftItem.price <= 0) {
       errs.price = "Price must be greater than zero";
     }
+    if (hasLocalTax && draftItem.tax < 0) {
+      errs.tax = "Tax cannot be negative";
+    }
 
     setDraftErrors(errs);
     return errs;
   }
 
+  // -------------------- SAVE, DELETE, EDIT LOGIC.......... --------------------------
+
   function SaveDraft() {
     if (Object.keys(ValidateDraft()).length > 0) return;
+    const important_Extra_Item_Props = {};
+
+    important_Extra_Item_Props.subtotal = draftItem.price * draftItem.quantity;
+    important_Extra_Item_Props.total =
+      draftItem.subtotal + (draftItem.subtotal * draftItem.tax) / 100;
+
+    setDraftItems((prev) => ({ ...prev, ...important_Extra_Item_Props }));
+
     setItems((prevItems) => [...prevItems, draftItem]);
 
     setDraftItems(null);
-    setHasTax(false);
+    setHasLocalTax(false);
     setDraftErrors({});
   }
 
   function DeleteDraft() {
     setDraftItems(null);
-    setHasTax(false);
+    setHasLocalTax(false);
     setDraftErrors({});
-  }
-
-  function EditItem(id) {
-    const itemToEdit = items.find((item) => item.id === id);
-    setDraftItems(itemToEdit);
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  }
-
-  function removeItem(id) {
-    setItems((prevItems) => prevItems.filter((_, i) => i !== i.id));
   }
 
   function handleSubmit(e) {
@@ -120,7 +207,7 @@ export default function CreateInvoice() {
       customer, // Customer Details
 
       // FINANCIALS
-      tax,
+      tax: globalTax,
       subtotal,
       total: subtotal + (subtotal * tax) / 100,
     };
@@ -289,7 +376,7 @@ export default function CreateInvoice() {
                     })
                   }
                 />
-                {hasTax && (
+                {hasLocalTax && (
                   /*<SimpleModal open={hasTax} onClose={null} children={ >*/ <>
                     {" "}
                     <TextField
@@ -297,48 +384,69 @@ export default function CreateInvoice() {
                       type="number"
                       error={Boolean(errors.tax)}
                       helperText={errors.tax || ""}
-                      value={tax || ""}
-                      onChange={(e) => setTax(Number(e.target.value))}
+                      value={localTax || ""}
+                      onChange={(e) => setLocalTax(Number(e.target.value))}
                     />
-                    <Button aria-label="Cancel" onClick={RemoveTax}>
+                    <Button aria-label="Cancel" onClick={RemoveLocalTax}>
                       <XIcon />
                     </Button>
                   </>
 
                   // </SimpleModal>
                 )}
-                {tax && (
+                {localTax > 0 && (
                   <div>
-                    Tax: {tax}% / {tax / 100}
+                    Tax: {localTax}% / {localTax / 100}
                   </div>
                 )}
                 <div className="flex items-end gap-2 md:col-span-2">
+                  {isEditing ? (
+                    <Button
+                      startIcon={<FilePlus />}
+                      variant="outlined"
+                      onClick={() => actuallyEditItem(draftItem.id)}
+                    >
+                      Save Edits
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={SaveDraft}
+                      startIcon={<PlusIcon />}
+                      variant="outlined"
+                    >
+                      Save
+                    </Button>
+                  )}
                   <Button
-                    onClick={SaveDraft}
-                    startIcon={<PlusIcon />}
-                    variant="outlined"
-                  >
-                    Save
-                  </Button>{" "}
-                  <Button
-                    onClick={AddTax}
+                    onClick={AddLocalTax}
                     startIcon={<PlusIcon />}
                     variant="contained"
                     size="medium"
                     color="info"
                     className="bg-blue-600 text-white hover:bg-blue-700"
                   >
-                    Add tax
+                    Add a tax
                   </Button>
-                  <Button
-                    onClick={DeleteDraft}
-                    startIcon={<Trash2Icon />}
-                    className="text-white bg-red-600"
-                    variant="text"
-                    color="error"
-                  >
-                    Cancel
-                  </Button>
+                  {isEditing ? (
+                    <Button
+                      onClick={CancelEdits}
+                      startIcon={<XIcon color="white" />}
+                      variant="text"
+                      className="bg-white text-red-600"
+                    >
+                      Cancel Edits
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={DeleteDraft}
+                      startIcon={<Trash2Icon />}
+                      className="text-white bg-red-600"
+                      variant="text"
+                      color="error"
+                    >
+                      Cancel
+                    </Button>
+                  )}
                 </div>
               </div>
             </section>
@@ -367,7 +475,7 @@ export default function CreateInvoice() {
 
                   <div className="col-span-3 flex gap-3">
                     <Button
-                      onClick={() => EditItem(item.id)}
+                      onClick={() => StartItemEdit(item.id)}
                       startIcon={<PlusIcon />}
                       variant="outlined"
                       size="medium"
@@ -389,13 +497,41 @@ export default function CreateInvoice() {
                   </div>
                 </div>
               ))}
+              <Button onClick={AddGlobalTax}>
+                Add a global tax to all items?
+              </Button>
             </section>
+          )}
+
+          {hasGlobalTax && (
+            <>
+              <TextField
+                label="Global Tax Rate (%)"
+                type="number"
+                value={globalTax || ""}
+                error={Boolean(errors.globalTax)}
+                helperText={errors.globalTax || ""}
+                onChange={(e) => setGlobalTax(parseFloat(e.target.value) || 0)}
+              />
+              <div>
+                Global Tax: {globalTax}% / {globalTax / 100}
+              </div>
+              <Button
+                aria-label="Cancel"
+                startIcon={<XIcon />}
+                onClick={RemoveGlobalTax}
+              >
+                Clear global tax
+              </Button>
+            </>
           )}
 
           {/* ===== Total ===== */}
           {items.length > 0 && (
             <div className="text-right font-bold text-lg">
-              Total Amount: ${total.toFixed(2)}
+              Subtotal: ${subtotal.toFixed(2)}
+              <br />
+              Total: ${total.toFixed(2)}
             </div>
           )}
 
