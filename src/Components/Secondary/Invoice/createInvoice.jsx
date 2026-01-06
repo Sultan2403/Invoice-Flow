@@ -1,7 +1,12 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
 import { useState, useEffect } from "react";
-import { submitInvoice, validateInvoice } from "../../../Utils/helpers";
+import {
+  submitInvoice,
+  validateInvoice,
+  calcLocalTax,
+  calcGlobalTax,
+} from "../../../Utils/helpers";
 import {
   Check,
   CircleAlert,
@@ -22,9 +27,7 @@ export default function CreateInvoice() {
   // Invoice metadata
 
   const [invoice_name, setInvoiceName] = useState("");
-  const [customer_name, setCustomerName] = useState("");
-  const [customer_email, setCustomerEmail] = useState("");
-  const [customer_address, setCustomerAddress] = useState("");
+  const [customer, setCustomer] = useState({});
 
   // Items and item edit state
 
@@ -57,13 +60,6 @@ export default function CreateInvoice() {
 
   // Total and tax calculations
 
-  function computeTaxValues() {
-    const subtotal = items.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
-  }
-
   // ----------------------------------- Tax functions.....--------------------------------------------
 
   function AddLocalTax() {
@@ -90,7 +86,6 @@ export default function CreateInvoice() {
     setDraftItems({
       id: crypto.randomUUID(),
       itemName: "",
-      tax: localTax,
       description: "",
       quantity: 1,
       price: 0,
@@ -113,8 +108,9 @@ export default function CreateInvoice() {
   function actuallyEditItem(id) {
     if (Object.keys(ValidateDraft()).length > 0) return;
 
-    const unchangedItems = items.filter((item) => item.id !== id);
-    setItems([...unchangedItems, draftItem]);
+    setItems((prevItems) =>
+      prevItems.map((item) => (item.id === id ? draftItem : item))
+    );
 
     setDraftItems(null);
     setIsEditing(false);
@@ -164,9 +160,14 @@ export default function CreateInvoice() {
   function SaveDraft() {
     if (Object.keys(ValidateDraft()).length > 0) return;
 
-    setDraftItems((prev) => ({ ...prev }));
+    const data = calcLocalTax({ draftItem, localTax });
 
-    setItems((prevItems) => [...prevItems, draftItem]);
+    const finalDraftItem = {
+      ...draftItem,
+      ...data,
+    };
+
+    setItems((prevItems) => [...prevItems, finalDraftItem]);
 
     setDraftItems(null);
     setHasLocalTax(false);
@@ -181,6 +182,8 @@ export default function CreateInvoice() {
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    const globalTaxValues = calcGlobalTax({ globalTax, items });
 
     const customer = {
       id: crypto.randomUUID(),
@@ -201,10 +204,7 @@ export default function CreateInvoice() {
 
       customer, // Customer Details
 
-      // FINANCIALS
-      //tax: globalTax,
-      //subtotal,
-      //total: subtotal + (subtotal * tax) / 100,
+      ...globalTaxValues,
     };
 
     const validationErrors = validateInvoice(invoice);
@@ -269,8 +269,10 @@ export default function CreateInvoice() {
               id="customer-name"
               error={Boolean(errors.customer_name)}
               helperText={errors.customer_name}
-              value={customer_name}
-              onChange={(e) => setCustomerName(e.target.value)}
+              value={customer.customer_name}
+              onChange={(e) =>
+                setCustomer({ ...customer, customer_name: e.target.value })
+              }
               fullWidth
             />
 
@@ -280,15 +282,19 @@ export default function CreateInvoice() {
               value={customer_email}
               error={Boolean(errors.customer_email)}
               helperText={errors.customer_email}
-              onChange={(e) => setCustomerEmail(e.target.value)}
+              onChange={(e) =>
+                setCustomer({ ...customer, customer_email: e.target.value })
+              }
               fullWidth
             />
 
             <TextField
               label="Customer Address"
               id="customer-address"
-              value={customer_address}
-              onChange={(e) => setCustomerAddress(e.target.value)}
+              value={customer.customer_address}
+              onChange={(e) =>
+                setCustomer({ ...customer, customer_address: e.target.value })
+              }
               fullWidth
               slotProps={{ htmlInput: { min: today } }}
               error={Boolean(errors.customer_address)}
@@ -468,7 +474,7 @@ export default function CreateInvoice() {
                   <div>{item.description}</div>
                   <div>{item.quantity}</div>
                   <div>${item.price.toFixed(2)}</div>
-                  <div>${(item.price * item.quantity).toFixed(2)}</div>
+                  {/* <div>${(item.price * item.quantity).toFixed(2)}</div> */}
 
                   <div className="col-span-3 flex gap-3">
                     <Button

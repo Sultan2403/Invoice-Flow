@@ -58,3 +58,22 @@ export function getInvoices() {
   const invoice = JSON.parse(localStorage.getItem(INVOICE_KEY)) || [];
   return invoice;
 }
+
+export function calcLocalTax({ draftItem, localTax }) {
+  const subtotal = draftItem.quantity * draftItem.price;
+  const taxRate = localTax / 100;
+  const taxAmount = subtotal * taxRate; // The actual amount the customer is charged
+
+  const total = subtotal + taxAmount;
+
+  return { subtotal, taxAmount, taxRate, total };
+}
+
+export function calcGlobalTax({ globalTax, items }) {
+  const itemsSubtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
+  const taxRate = globalTax / 100;
+  const taxAmount = itemsSubtotal * taxRate; // The actual amount the customer is charged
+  const total = itemsSubtotal + taxAmount;
+
+  return { itemsSubtotal, taxAmount, taxRate, total };
+}
