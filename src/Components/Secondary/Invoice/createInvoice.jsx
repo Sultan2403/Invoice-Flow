@@ -58,18 +58,12 @@ export default function CreateInvoice() {
 
   // Total and tax calculations
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.quantity * item.price,
-    0
-  ); // This is the combined total of all individual items.
-
-  // ------------------------------ TAX LOGIC.......... ----------------------------------
-
-  const localTaxTotal = items.reduce((sum, item) => sum + item.tax, 0); // Total local tax calc
-
-  const totalTax = localTaxTotal + globalTax; // Total tax calc for global and local tax
-
-  const total = subtotal + (subtotal * totalTax) / 100; // Final total calc
+  function computeTaxValues() {
+    const subtotal = items.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+  }
 
   // ----------------------------------- Tax functions.....--------------------------------------------
 
@@ -104,8 +98,8 @@ export default function CreateInvoice() {
     });
   }
 
-  function removeItem() {
-    setItems((prevItems) => prevItems.filter((_, i) => i !== i.id));
+  function removeItem(id) {
+    setItems((prev) => prev.filter((item) => item.id !== id));
   }
 
   //-------------------------------- ITEM EDIT LOGIC.......... ----------------------------------
@@ -147,6 +141,12 @@ export default function CreateInvoice() {
     }
     if (draftItem.quantity <= 0) {
       errs.quantity = "Quantity must be greater than zero";
+    }
+    if (isNaN(draftItem.quantity)) {
+      errs.quantity = "Quantity must be a number";
+    }
+    if (isNaN(draftItem.price)) {
+      errs.price = "Price must be a number";
     }
     if (draftItem.price <= 0) {
       errs.price = "Price must be greater than zero";
