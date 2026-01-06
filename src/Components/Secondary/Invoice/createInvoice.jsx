@@ -22,7 +22,6 @@ export default function CreateInvoice() {
   // Invoice metadata
 
   const [invoice_name, setInvoiceName] = useState("");
-  const [itemName, setItemName] = useState("");
   const [customer_name, setCustomerName] = useState("");
   const [customer_email, setCustomerEmail] = useState("");
   const [customer_address, setCustomerAddress] = useState("");
@@ -90,7 +89,7 @@ export default function CreateInvoice() {
   function AddRow() {
     setDraftItems({
       id: crypto.randomUUID(),
-      itemName,
+      itemName: "",
       tax: localTax,
       description: "",
       quantity: 1,
@@ -111,10 +110,11 @@ export default function CreateInvoice() {
     setIsEditing(true);
   }
 
-  function actuallyEditItem() {
+  function actuallyEditItem(id) {
     if (Object.keys(ValidateDraft()).length > 0) return;
 
-    setItems((prevItems) => [...prevItems, draftItem]);
+    const unchangedItems = items.filter((item) => item.id !== id);
+    setItems([...unchangedItems, draftItem]);
 
     setDraftItems(null);
     setIsEditing(false);
@@ -163,13 +163,8 @@ export default function CreateInvoice() {
 
   function SaveDraft() {
     if (Object.keys(ValidateDraft()).length > 0) return;
-    const important_Extra_Item_Props = {};
 
-    important_Extra_Item_Props.subtotal = draftItem.price * draftItem.quantity;
-    important_Extra_Item_Props.total =
-      draftItem.subtotal + (draftItem.subtotal * draftItem.tax) / 100;
-
-    setDraftItems((prev) => ({ ...prev, ...important_Extra_Item_Props }));
+    setDraftItems((prev) => ({ ...prev }));
 
     setItems((prevItems) => [...prevItems, draftItem]);
 
@@ -202,14 +197,14 @@ export default function CreateInvoice() {
       createdAt: new Date().toISOString(),
       invoice_name,
       items,
-      status,
+      // status,
 
       customer, // Customer Details
 
       // FINANCIALS
-      tax: globalTax,
-      subtotal,
-      total: subtotal + (subtotal * tax) / 100,
+      //tax: globalTax,
+      //subtotal,
+      //total: subtotal + (subtotal * tax) / 100,
     };
 
     const validationErrors = validateInvoice(invoice);
@@ -333,8 +328,10 @@ export default function CreateInvoice() {
                   id="item-name"
                   error={Boolean(errors.itemName)}
                   helperText={errors.itemName || ""}
-                  value={itemName}
-                  onChange={(e) => setItemName(e.target.value)}
+                  value={draftItem.itemName}
+                  onChange={(e) =>
+                    setDraftItems({ ...draftItem, itemName: e.target.value })
+                  }
                   fullWidth
                 />
                 <TextField
@@ -465,7 +462,7 @@ export default function CreateInvoice() {
 
               {items.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.id}
                   className="grid grid-cols-8 gap-4 items-center text-sm"
                 >
                   <div>{item.description}</div>
