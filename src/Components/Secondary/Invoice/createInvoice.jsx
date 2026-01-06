@@ -27,7 +27,7 @@ export default function CreateInvoice() {
   // Invoice metadata
 
   const [invoice_name, setInvoiceName] = useState("");
-  const [customer, setCustomer] = useState({});
+  const [customerData, setCustomerData] = useState({});
 
   // Items and item edit state
 
@@ -35,9 +35,8 @@ export default function CreateInvoice() {
   const [draftItem, setDraftItems] = useState(null);
   const [draftErrs, setDraftErrors] = useState({});
 
-  // Tax Data
+  // Tax states
 
-  const [localTax, setLocalTax] = useState(0);
   const [globalTax, setGlobalTax] = useState(0);
   const [hasLocalTax, setHasLocalTax] = useState(false);
   const [hasGlobalTax, setHasGlobalTax] = useState(false);
@@ -56,9 +55,12 @@ export default function CreateInvoice() {
 
   // Helpers :)
 
-  const [isEditing, setIsEditing] = useState(false);
-
+  const [editingItemId, setEditingItemId] = useState(null);
   // Total and tax calculations
+
+  const itemsSubtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
+  const itemsTotal = items.reduce((acc, item) => acc + item.total, 0);
+  const globalTaxValues = calcGlobalTax({ items, globalTax });
 
   // ----------------------------------- Tax functions.....--------------------------------------------
 
@@ -68,7 +70,7 @@ export default function CreateInvoice() {
 
   function RemoveLocalTax() {
     setHasLocalTax(false);
-    setLocalTax(0);
+    setDraftItems({ ...draftItem, tax: 0 });
   }
 
   function AddGlobalTax() {
@@ -85,7 +87,8 @@ export default function CreateInvoice() {
   function AddRow() {
     setDraftItems({
       id: crypto.randomUUID(),
-      itemName: "",
+      name: "",
+      tax: 0,
       description: "",
       quantity: 1,
       price: 0,
@@ -97,29 +100,43 @@ export default function CreateInvoice() {
   }
 
   //-------------------------------- ITEM EDIT LOGIC.......... ----------------------------------
-
   function StartItemEdit(id) {
     const itemToEdit = items.find((item) => item.id === id);
-    setDraftItems(itemToEdit);
-
-    setIsEditing(true);
+    // Take a snapshot
+    setDraftItems({ ...itemToEdit });
+    setEditingItemId(id); // mark this item as editing
   }
 
-  function actuallyEditItem(id) {
+  function finalizeItemStructure() {
+    const data = calcLocalTax({ draftItem });
+
+    const finalDraftItem = {
+      ...draftItem,
+      ...data,
+    };
+    return finalDraftItem;
+  }
+
+  function saveEdits() {
     if (Object.keys(ValidateDraft()).length > 0) return;
 
+    const finalItem = finalizeItemStructure();
+
     setItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? draftItem : item))
+      prevItems.map((item) => (item.id === editingItemId ? finalItem : item))
     );
 
+    // Clear edit state
     setDraftItems(null);
-    setIsEditing(false);
+    setEditingItemId(null);
+
     setDraftErrors({});
   }
 
   function CancelEdits() {
     setDraftItems(null);
-    setIsEditing(false);
+    setEditingItemId(null);
+
     setDraftErrors({});
   }
 
@@ -129,26 +146,30 @@ export default function CreateInvoice() {
 
   function ValidateDraft() {
     const errs = {};
-    if (!draftItem.itemName.trim()) {
-      errs.itemName = "Item name is required";
+    if (!draftItem.name.trim()) {
+      errs.name = "Item name is required";
     }
     if (!draftItem.description.trim()) {
       errs.description = "Item description is required";
     }
-    if (draftItem.quantity <= 0) {
+    if (typeof draftItem.quantity !== "number" || isNaN(draftItem.quantity)) {
+      errs.quantity = "Quantity must be a valid number";
+    } else if (draftItem.quantity <= 0) {
       errs.quantity = "Quantity must be greater than zero";
     }
-    if (isNaN(draftItem.quantity)) {
-      errs.quantity = "Quantity must be a number";
-    }
-    if (isNaN(draftItem.price)) {
-      errs.price = "Price must be a number";
-    }
-    if (draftItem.price <= 0) {
+
+    if (typeof draftItem.price !== "number" || isNaN(draftItem.price)) {
+      errs.price = "Price must be a valid number";
+    } else if (draftItem.price <= 0) {
       errs.price = "Price must be greater than zero";
     }
-    if (hasLocalTax && draftItem.tax < 0) {
-      errs.tax = "Tax cannot be negative";
+
+    if (hasLocalTax) {
+      if (typeof draftItem.tax !== "number" || isNaN(draftItem.tax)) {
+        errs.tax = "Tax must be a valid number";
+      } else if (draftItem.tax <= 0) {
+        errs.tax = "Tax must be greater than zero";
+      }
     }
 
     setDraftErrors(errs);
@@ -160,12 +181,7 @@ export default function CreateInvoice() {
   function SaveDraft() {
     if (Object.keys(ValidateDraft()).length > 0) return;
 
-    const data = calcLocalTax({ draftItem, localTax });
-
-    const finalDraftItem = {
-      ...draftItem,
-      ...data,
-    };
+    const finalDraftItem = finalizeItemStructure();
 
     setItems((prevItems) => [...prevItems, finalDraftItem]);
 
@@ -183,13 +199,9 @@ export default function CreateInvoice() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    const globalTaxValues = calcGlobalTax({ globalTax, items });
-
     const customer = {
       id: crypto.randomUUID(),
-      customer_name,
-      customer_email,
-      customer_address,
+      ...customerData,
     };
 
     const invoice = {
@@ -230,7 +242,9 @@ export default function CreateInvoice() {
 
       // reset form
       setInvoiceName("");
-      setCustomerName("");
+      setCustomerData({});
+      setItems([]);
+      setDraftItems(null);
 
       setErrors({});
       setSuccess(null);
@@ -243,176 +257,191 @@ export default function CreateInvoice() {
   }, [success]);
 
   return (
-    <div className="h-full w-full flex justify-center bg-gray-50 p-6">
-      <FormControl className="w-full">
+    <div className="min-h-screen flex justify-center bg-gray-50 p-4 sm:p-6">
+      <FormControl className="w-full max-w-4xl">
         <form
           onSubmit={handleSubmit}
-          className="max-w-3xl w-full mx-auto p-6 bg-white rounded-md shadow-sm space-y-6"
+          noValidate
+          className="bg-white p-6 rounded-lg shadow-md space-y-6"
         >
-          {/* ===== Header ===== */}
           <h2 className="text-2xl font-semibold text-center">Create Invoice</h2>
 
-          {/* ===== Invoice Meta ===== */}
-          <section className="space-y-4">
+          {/* Invoice Meta */}
+          <section className="grid gap-4 sm:grid-cols-2">
             <TextField
-              label="Invoice Name"
-              id="invoice-name"
-              error={Boolean(errors.invoice_name)}
-              helperText={errors.invoice_name || ""}
+              label="Invoice Name *"
               value={invoice_name}
               onChange={(e) => setInvoiceName(e.target.value)}
               fullWidth
+              error={Boolean(errors.invoice_name)}
+              helperText={errors.invoice_name}
             />
-
             <TextField
-              label="Customer Name"
-              id="customer-name"
+              label="Customer Name *"
+              value={customerData.customer_name || ""}
+              onChange={(e) =>
+                setCustomerData({
+                  ...customerData,
+                  customer_name: e.target.value,
+                })
+              }
+              fullWidth
               error={Boolean(errors.customer_name)}
               helperText={errors.customer_name}
-              value={customer.customer_name}
+            />
+            <TextField
+              label="Customer Email"
+              value={customerData.customer_email || ""}
               onChange={(e) =>
-                setCustomer({ ...customer, customer_name: e.target.value })
+                setCustomerData({
+                  ...customerData,
+                  customer_email: e.target.value,
+                })
               }
               fullWidth
-            />
-
-            <TextField
-              label="Customer Email "
-              id="customer-email"
-              value={customer_email}
               error={Boolean(errors.customer_email)}
               helperText={errors.customer_email}
-              onChange={(e) =>
-                setCustomer({ ...customer, customer_email: e.target.value })
-              }
-              fullWidth
             />
-
             <TextField
               label="Customer Address"
-              id="customer-address"
-              value={customer.customer_address}
+              value={customerData.customer_address || ""}
               onChange={(e) =>
-                setCustomer({ ...customer, customer_address: e.target.value })
+                setCustomerData({
+                  ...customerData,
+                  customer_address: e.target.value,
+                })
               }
               fullWidth
-              slotProps={{ htmlInput: { min: today } }}
               error={Boolean(errors.customer_address)}
               helperText={errors.customer_address}
             />
-
             <TextField
-              label={"Due Date"}
+              label="Issue Date"
               type="date"
+              value={issueDate}
+              error={errors.issueDate}
+              helperText={errors.issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
               fullWidth
               slotProps={{
-                htmlInput: { min: issueDate },
                 inputLabel: { shrink: true },
+                htmlInput: {
+                  min: today,
+                },
               }}
-              value={dueDate || ""}
-              onChange={(e) => setDueDate(e.target.value)}
             />
-
             <TextField
-              label={"Issue Date"}
-              slotProps={{ inputLabel: { shrink: true } }}
+              label="Due Date"
               type="date"
+              value={dueDate || ""}
+              error={errors.dueDate}
+              helperText={errors.dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               fullWidth
-              value={issueDate || ""}
-              onChange={(e) => setIssueDate(e.target.value)}
+              slotProps={{
+                inputLabel: { shrink: true },
+                htmlInput: { min: issueDate },
+              }}
             />
           </section>
 
-          {/* ===== Draft Item Editor ===== */}
+          {/* Draft Item Editor */}
           {draftItem && (
-            <section className="border rounded-md p-4 bg-gray-50 space-y-4">
-              <h3 className="font-semibold">Add / Edit Item</h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
+            <fieldset className="border rounded-md p-4 bg-gray-50 space-y-4">
+              <legend className="sr-only">Add or edit item</legend>
+              <div className="grid gap-4 sm:grid-cols-6">
                 <TextField
                   label="Item Name"
-                  id="item-name"
-                  error={Boolean(errors.itemName)}
-                  helperText={errors.itemName || ""}
-                  value={draftItem.itemName}
+                  value={draftItem.name}
                   onChange={(e) =>
-                    setDraftItems({ ...draftItem, itemName: e.target.value })
+                    setDraftItems({ ...draftItem, name: e.target.value })
                   }
                   fullWidth
+                  error={Boolean(draftErrs.name)}
+                  helperText={draftErrs.name}
+                  required
                 />
                 <TextField
-                  className="md:col-span-2"
-                  label="Item Description"
+                  label="Description"
                   value={draftItem.description}
+                  onChange={(e) =>
+                    setDraftItems({ ...draftItem, description: e.target.value })
+                  }
+                  fullWidth
+                  sm={{ gridColumn: "span 3" }}
                   error={Boolean(draftErrs.description)}
                   helperText={draftErrs.description}
-                  onChange={(e) =>
-                    setDraftItems({
-                      ...draftItem,
-                      description: e.target.value,
-                    })
-                  }
+                  required
                 />
                 <TextField
-                  label="Quantity (units)"
+                  label="Quantity"
                   type="number"
                   value={draftItem.quantity || ""}
+                  onChange={(e) =>
+                    setDraftItems({ ...draftItem, quantity: +e.target.value })
+                  }
                   error={Boolean(draftErrs.quantity)}
                   helperText={draftErrs.quantity}
-                  onChange={(e) =>
-                    setDraftItems({
-                      ...draftItem,
-                      quantity: +e.target.value,
-                    })
-                  }
+                  slotProps={{
+                    inputLabel: { shrink: true },
+                    htmlInput: { min: 1 },
+                  }}
+                  required
                 />
                 <TextField
                   label="Price ($)"
                   type="number"
                   value={draftItem.price || ""}
+                  onChange={(e) =>
+                    setDraftItems({ ...draftItem, price: +e.target.value })
+                  }
                   error={Boolean(draftErrs.price)}
                   helperText={draftErrs.price}
-                  onChange={(e) =>
-                    setDraftItems({
-                      ...draftItem,
-                      price: +e.target.value,
-                    })
-                  }
+                  slotProps={{
+                    inputLabel: { shrink: true },
+                    htmlInput: { min: 0o1 },
+                  }}
+                  required
                 />
                 {hasLocalTax && (
-                  /*<SimpleModal open={hasTax} onClose={null} children={ >*/ <>
-                    {" "}
+                  <>
                     <TextField
-                      label="Tax Rate (%)"
+                      label="Tax (%)"
                       type="number"
-                      error={Boolean(errors.tax)}
-                      helperText={errors.tax || ""}
-                      value={localTax || ""}
-                      onChange={(e) => setLocalTax(Number(e.target.value))}
+                      value={draftItem.tax || ""}
+                      onChange={(e) =>
+                        setDraftItems({ ...draftItem, tax: +e.target.value })
+                      }
+                      error={Boolean(draftErrs.tax)}
+                      helperText={draftErrs.tax}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                        htmlInput: { min: 0 },
+                      }}
                     />
-                    <Button aria-label="Cancel" onClick={RemoveLocalTax}>
+                    <Button
+                      type="button"
+                      onClick={RemoveLocalTax}
+                      variant="outlined"
+                      aria-label="Remove local tax"
+                    >
                       <XIcon />
                     </Button>
                   </>
-
-                  // </SimpleModal>
                 )}
-                {localTax > 0 && (
-                  <div>
-                    Tax: {localTax}% / {localTax / 100}
-                  </div>
-                )}
-                <div className="flex items-end gap-2 md:col-span-2">
-                  {isEditing ? (
+                <div className="flex justify-end gap-2 sm:col-span-6">
+                  {editingItemId ? (
                     <Button
+                      type="button"
+                      onClick={saveEdits}
                       startIcon={<FilePlus />}
                       variant="outlined"
-                      onClick={() => actuallyEditItem(draftItem.id)}
                     >
                       Save Edits
                     </Button>
                   ) : (
                     <Button
+                      type="button"
                       onClick={SaveDraft}
                       startIcon={<PlusIcon />}
                       variant="outlined"
@@ -421,126 +450,126 @@ export default function CreateInvoice() {
                     </Button>
                   )}
                   <Button
+                    type="button"
                     onClick={AddLocalTax}
                     startIcon={<PlusIcon />}
                     variant="contained"
-                    size="medium"
                     color="info"
-                    className="bg-blue-600 text-white hover:bg-blue-700"
                   >
-                    Add a tax
+                    Add Tax
                   </Button>
-                  {isEditing ? (
-                    <Button
-                      onClick={CancelEdits}
-                      startIcon={<XIcon color="white" />}
-                      variant="text"
-                      className="bg-white text-red-600"
-                    >
-                      Cancel Edits
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={DeleteDraft}
-                      startIcon={<Trash2Icon />}
-                      className="text-white bg-red-600"
-                      variant="text"
-                      color="error"
-                    >
-                      Cancel
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    onClick={editingItemId ? CancelEdits : DeleteDraft}
+                    color="error"
+                    variant="text"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
-            </section>
+            </fieldset>
           )}
 
-          {/* ===== Items List ===== */}
+          {/* Items List */}
           {items.length > 0 && (
-            <section className="space-y-3">
-              <div className="grid grid-cols-8 gap-4 font-semibold text-sm border-b pb-2">
+            <section className="overflow-x-auto space-y-2">
+              <div className="hidden sm:grid grid-cols-8 font-semibold border-b pb-2">
                 <div>Description</div>
                 <div>Qty</div>
                 <div>Price</div>
                 <div>Total</div>
                 <div className="col-span-2"></div>
               </div>
-
-              {items.map((item, index) => (
+              {items.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-8 gap-4 items-center text-sm"
+                  className={`grid sm:grid-cols-8 gap-2 items-center text-sm ${
+                    idx % 2 === 0 ? "bg-gray-50" : ""
+                  } ${editingItemId === item.id ? "opacity-50" : ""}`}
                 >
-                  <div>{item.description}</div>
+                  <div>{item.name}</div>
+                  <div className="sm:col-span-4">{item.description}</div>
                   <div>{item.quantity}</div>
                   <div>${item.price.toFixed(2)}</div>
-                  {/* <div>${(item.price * item.quantity).toFixed(2)}</div> */}
-
-                  <div className="col-span-3 flex gap-3">
+                  <div className="col-span-3 flex gap-2 sm:justify-end">
                     <Button
+                      type="button"
                       onClick={() => StartItemEdit(item.id)}
                       startIcon={<PlusIcon />}
                       variant="outlined"
-                      size="medium"
-                      className="bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      size="small"
                     >
                       Edit
                     </Button>
-
                     <Button
+                      type="button"
                       onClick={() => removeItem(item.id)}
                       startIcon={<Trash2Icon />}
                       variant="contained"
-                      size="medium"
+                      size="small"
                       color="error"
-                      className="bg-red-600 text-white hover:bg-red-700"
                     >
                       Remove
                     </Button>
                   </div>
                 </div>
               ))}
-              <Button onClick={AddGlobalTax}>
-                Add a global tax to all items?
+              <Button
+                type="button"
+                disabled={hasGlobalTax}
+                onClick={AddGlobalTax}
+              >
+                Add a global tax?
               </Button>
             </section>
           )}
 
           {hasGlobalTax && (
-            <>
+            <div className="flex items-center gap-2">
               <TextField
-                label="Global Tax Rate (%)"
+                label="Global Tax (%)"
                 type="number"
                 value={globalTax || ""}
-                error={Boolean(errors.globalTax)}
-                helperText={errors.globalTax || ""}
-                onChange={(e) => setGlobalTax(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setGlobalTax(+e.target.value)}
               />
-              <div>
-                Global Tax: {globalTax}% / {globalTax / 100}
-              </div>
               <Button
-                aria-label="Cancel"
-                startIcon={<XIcon />}
+                type="button"
                 onClick={RemoveGlobalTax}
+                startIcon={<XIcon />}
+                variant="outlined"
               >
-                Clear global tax
+                Clear
               </Button>
-            </>
-          )}
-
-          {/* ===== Total ===== */}
-          {items.length > 0 && (
-            <div className="text-right font-bold text-lg">
-              Subtotal: ${subtotal.toFixed(2)}
-              <br />
-              Total: ${total.toFixed(2)}
             </div>
           )}
 
-          {/* ===== Actions ===== */}
-          <section className="flex justify-between items-center">
+          {hasGlobalTax && globalTax > 0 && (
+            <div>Tax applying to all items: {globalTax}%</div>
+          )}
+
+          {/* Totals */}
+          {items.length > 0 && (
+            <div className="bg-gray-50 p-3 rounded text-right font-bold">
+              <div>
+                Subtotal: $
+                {hasGlobalTax
+                  ? calcGlobalTax({ items, globalTax }).itemsSubtotal.toFixed(2)
+                  : itemsSubtotal.toFixed(2)}
+              </div>
+              <div>
+                Total: $
+                {hasGlobalTax
+                  ? calcGlobalTax({ items, globalTax }).total
+                  : itemsTotal.toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-between mt-4">
             <Button
+              type="button"
               startIcon={<PlusIcon />}
               onClick={AddRow}
               variant="outlined"
@@ -548,35 +577,47 @@ export default function CreateInvoice() {
             >
               Add Item
             </Button>
-
             <Button
+              type="submit"
               variant="contained"
               size="large"
-              type="submit"
-              startIcon={<FilePlus className="w-4 h-4" />}
+              startIcon={<FilePlus />}
             >
               Create Invoice
             </Button>
-          </section>
+          </div>
         </form>
 
-        {/* ===== Feedback Modal ===== */}
+        {/* Feedback Modal */}
         <SimpleModal open={feedback} onClose={() => setFeedback(false)}>
-          <div className="flex flex-col items-center gap-3">
+          <div role="alert" className="flex flex-col items-center gap-3">
             {success && (
-              <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded">
-                <Check />
-                <span className="font-semibold">
-                  Invoice created successfully
-                </span>
+              <div
+                role="status"
+                className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded"
+              >
+                <Check aria-hidden="true" /> Invoice created successfully
               </div>
             )}
-
             {Object.keys(errors).length > 0 && (
-              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded">
-                <CircleAlert />
-                <span>Please fix the errors and try again</span>
-              </div>
+              <>
+                {errors.items ? (
+                  <div
+                    role="status"
+                    className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded"
+                  >
+                    <CircleAlert aria-hidden="true" /> {errors.items}
+                  </div>
+                ) : (
+                  <div
+                    role="status"
+                    className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded"
+                  >
+                    <CircleAlert aria-hidden="true" /> Please fix the errors and
+                    try again
+                  </div>
+                )}
+              </>
             )}
           </div>
         </SimpleModal>

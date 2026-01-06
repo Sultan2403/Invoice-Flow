@@ -27,21 +27,27 @@ export default function Nav() {
   }, [open]);
 
   return (
-    <nav
-      className={`h-screen bg-gradient-to-b from-sky-600 to-sky-700 text-white flex flex-col p-4 shadow-lg transition-all duration-200 ${
-        open ? "w-[20%]" : "w-[10%]"
+    <aside
+      aria-label="Main navigation"
+      className={`fixed left-0 top-0 h-screen z-40 bg-gradient-to-b from-sky-600 to-sky-700 text-white flex flex-col p-4 shadow-lg transition-all duration-200 ${
+        open ? "w-56" : "w-20"
       }`}
     >
       {/* Logo / App Name */}
       <div className="mb-6 flex items-center justify-between ">
-        <NavLink to="/" className="flex items-center gap-3">
+        <NavLink
+          to="/"
+          className="flex items-center gap-4"
+          aria-label="Go to dashboard"
+        >
           <div
-            className={`w-10 h-10 bg-white/10 rounded flex items-center justify-center text-xl font-bold`}
+            className={`w-12 h-12 bg-white/10 rounded flex items-center justify-center text-2xl font-bold`}
+            title="Invoice Flow"
           >
             IF
           </div>
           <div className={`${open ? "block" : "hidden"}`}>
-            <div className="text-xl font-bold leading-4">Invoice Flow</div>
+            <div className="text-2xl font-bold leading-4">Invoice Flow</div>
             <div className="text-xs text-white/90">Manage your invoices</div>
           </div>
         </NavLink>
@@ -49,76 +55,82 @@ export default function Nav() {
         <button
           onClick={() => setOpen((s) => !s)}
           aria-label={open ? "Collapse navigation" : "Expand navigation"}
+          aria-expanded={open}
           title={open ? "Collapse" : "Expand"}
-          className="p-1 rounded hover:bg-white/10 transition"
+          className="p-1 rounded hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-white/50"
         >
           {open ? <ChevronLeft /> : <ChevronRight />}
         </button>
       </div>
 
       {/* Links */}
-      <ul className="flex flex-col gap-2">
-        <li>
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              isActive
-                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
-                    open ? "" : "justify-center"
-                  }`
-                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
-                    open ? "" : "justify-center"
-                  }`
-            }
-          >
-            <span className="text-lg">
-              <HomeIcon />
-            </span>
-            <span className={`${open ? "" : "hidden"}`}>Dashboard</span>
-          </NavLink>
-        </li>
+      <nav className="flex-1" aria-label="Primary navigation">
+        <ul className="flex flex-col gap-2" role="menu">
+          <li>
+            <NavLink
+              to="/"
+              end
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <HomeIcon />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Dashboard</span>
+            </NavLink>
+          </li>
 
-        <li>
-          <NavLink
-            to="/invoices"
-            className={({ isActive }) =>
-              isActive
-                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
-                    open ? "" : "justify-center"
-                  }`
-                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
-                    open ? "" : "justify-center"
-                  }`
-            }
-          >
-            <span className="text-lg">
-              <FilesIcon />
-            </span>
-            <span className={`${open ? "" : "hidden"}`}>Invoices</span>
-          </NavLink>
-        </li>
+          <li>
+            <NavLink
+              to="/invoices"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <FilesIcon />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Invoices</span>
+            </NavLink>
+          </li>
 
-        <li>
-          <NavLink
-            to="/create-invoice"
-            className={({ isActive }) =>
-              isActive
-                ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
-                    open ? "" : "justify-center"
-                  }`
-                : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
-                    open ? "" : "justify-center"
-                  }`
-            }
-          >
-            <span className="text-lg">
-              <PlusIcon />
-            </span>
-            <span className={`${open ? "" : "hidden"}`}>Create Invoice</span>
-          </NavLink>
-        </li>
-      </ul>
+          <li>
+            <NavLink
+              to="/create-invoice"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <PlusIcon />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Create Invoice</span>
+            </NavLink>
+          </li>
+        </ul>
+      </nav>
 
       <div className={`mt-auto pt-6 ${open ? "" : "px-2"}`}>
         <div className={`${open ? "text-xs text-white/80 mb-2" : "hidden"}`}>
@@ -128,10 +140,11 @@ export default function Nav() {
           className={`w-full bg-white/10 hover:bg-white/20 px-3 py-2 rounded-md text-sm transition ${
             open ? "text-sm" : "p-2"
           }`}
+          aria-label="Sign out"
         >
-          {open ? "Sign out" : ""}
+          <span className={`${open ? "" : "sr-only"}`}>Sign out</span>
         </button>
       </div>
-    </nav>
+    </aside>
   );
 }
