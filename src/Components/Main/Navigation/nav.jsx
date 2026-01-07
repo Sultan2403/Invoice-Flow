@@ -30,7 +30,7 @@ export default function Nav() {
     <aside
       aria-label="Main navigation"
       className={`fixed left-0 top-0 h-screen z-40 bg-gradient-to-b from-sky-600 to-sky-700 text-white flex flex-col p-4 shadow-lg transition-all duration-200 ${
-        open ? "w-56" : "w-20"
+        open ? "w-56" : "w-22"
       }`}
     >
       {/* Logo / App Name */}
