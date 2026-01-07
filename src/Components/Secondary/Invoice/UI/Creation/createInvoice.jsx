@@ -1,11 +1,11 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
 import { useState, useEffect, useMemo } from "react";
-import { calcGlobalFinancials } from "../Helpers/calcFinancials";
-import { validateInvoice } from "../Helpers/validateInvoice";
-import { submitInvoice } from "../Helpers/submitInvoice";
-import { finalizeItemStructure } from "../Helpers/finalizeItemStructure";
-import { ValidateDraft } from "../Helpers/validateDraft";
+import { calcGlobalFinancials } from "../../Helpers/calcFinancials";
+import { validateInvoice } from "../../Helpers/validateInvoice";
+import { submitInvoice } from "../../Helpers/submitInvoice";
+import { finalizeItemStructure } from "../../Helpers/finalizeItemStructure";
+import { ValidateDraft } from "../../Helpers/validateDraft";
 import {
   Check,
   CircleAlert,
@@ -14,12 +14,12 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
-import SimpleModal from "../../../UI/Modal/modal";
+import SimpleModal from "../../../../UI/Modal/modal";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
-export default function CreateInvoice() {
+export default function CreateInvoice({ onInvoiceCreation }) {
   // Invoice metadata
 
   const [invoice_name, setInvoiceName] = useState("");
@@ -195,7 +195,7 @@ export default function CreateInvoice() {
       createdAt: new Date().toISOString(),
       invoice_name,
       items,
-      // status,
+      status: "Draft",
 
       customer, // Customer Details
 
@@ -206,6 +206,7 @@ export default function CreateInvoice() {
 
     const validationErrors = validateInvoice(invoice);
     setErrors(validationErrors);
+    console.log(validationErrors, draftErrs);
 
     // If there are no errors proceed with the submit....
 
@@ -213,6 +214,7 @@ export default function CreateInvoice() {
       submitInvoice(invoice);
       setSuccess(true);
       setFeedback(true);
+      onInvoiceCreation();
       return;
     }
 

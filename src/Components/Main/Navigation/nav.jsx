@@ -90,7 +90,7 @@ export default function Nav() {
 
           <li>
             <NavLink
-              to="/invoices"
+              to="invoices/view"
               role="menuitem"
               className={({ isActive }) =>
                 isActive
@@ -111,7 +111,7 @@ export default function Nav() {
 
           <li>
             <NavLink
-              to="/create-invoice"
+              to="invoices/create"
               role="menuitem"
               className={({ isActive }) =>
                 isActive
