@@ -35,7 +35,7 @@ export default function InvoiceTable({ invoices }) {
                   >
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{invoice.invoice_name}</TableCell>
-                    <TableCell>{invoice.customer.customer_name}</TableCell>
+                    <TableCell>{invoice.customer.name}</TableCell>
                     <TableCell align="right">
                       {invoice.items.length}{" "}
                       {invoice.items.length > 1 ? "Items" : "Item"}

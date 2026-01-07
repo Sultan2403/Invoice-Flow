@@ -22,6 +22,12 @@ export default function InvoiceTemplate({ invoices }) {
   // Check if any item has tax
   const hasItemTaxes = invoice.items.some((item) => item.tax > 0);
 
+  // Extract customer info safely
+  const customer = invoice.customer || {};
+  const customerName = customer.name;
+  const customerEmail = customer.email || "";
+  const customerAddress = customer.address || "";
+
   return (
     <div
       id="invoice-template"
@@ -37,8 +43,10 @@ export default function InvoiceTemplate({ invoices }) {
         )}
       </div>
 
-      {/* Meta */}
+      {/* Invoice & Dates */}
+      {/* Invoice & Customer */}
       <div className="mb-6 grid grid-cols-2 gap-4">
+        {/* Left: Invoice Info */}
         <div>
           <p>
             <strong>Invoice Name:</strong> {invoice.invoice_name}
@@ -50,10 +58,13 @@ export default function InvoiceTemplate({ invoices }) {
             <strong>Due Date:</strong> {invoice.dueDate}
           </p>
         </div>
+
+        {/* Right: Customer Info */}
         <div className="text-right">
-          <p>
-            <strong>Customer:</strong> {invoice.customer.customer_name}
-          </p>
+          <p className="font-semibold">Bill To:</p>
+          {customerName && <p>{customerName}</p>}
+          {customerEmail && <p>{customerEmail}</p>}
+          {customerAddress && <p>{customerAddress}</p>}
         </div>
       </div>
 

@@ -15,7 +15,7 @@ export function validateInvoice(invoice) {
   const customerNameRegex = /^[a-zA-Z0-9\s.'-]{1,50}$/;
   if (!invoice.customer.name?.trim()) {
     errors.customer_name = "Customer name is required";
-  } else if (!customerNameRegex.test(invoice.customer.customer_name.trim())) {
+  } else if (!customerNameRegex.test(invoice.customer.name.trim())) {
     errors.customer_name =
       "Customer name can include letters, numbers, spaces, apostrophe, period, hyphen (max 50 chars)";
   }
@@ -23,7 +23,7 @@ export function validateInvoice(invoice) {
   // --- Customer Email (optional) ---
   if (invoice.customer.email?.trim()) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(invoice.customer.customer_email.trim())) {
+    if (!emailRegex.test(invoice.customer.email.trim())) {
       errors.customer_email = "Invalid email format";
     }
   }
@@ -31,7 +31,7 @@ export function validateInvoice(invoice) {
   // --- Customer Address (optional) ---
   if (invoice.customer.address?.trim()) {
     const addressRegex = /^[a-zA-Z0-9\s.,#-]{0,100}$/;
-    if (!addressRegex.test(invoice.customer.customer_address.trim())) {
+    if (!addressRegex.test(invoice.customer.address.trim())) {
       errors.customer_address =
         "Address can include letters, numbers, spaces, ',', '.', '#' or '-' (max 100 chars)";
     }
