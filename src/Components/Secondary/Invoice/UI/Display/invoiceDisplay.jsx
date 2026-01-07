@@ -1,31 +1,60 @@
-export default function InvoiceTemplate({ invoice }) {
-  if (!invoice) {
-    return (
-      <div className="p-8 text-center text-gray-600">Invoice not found</div>
-    );
-  }
+import { useMemo, useEffect } from "react";
+import { NavLink, useParams } from "react-router-dom";
+import { Button, Chip } from "@mui/material";
+import { CircleAlert } from "lucide-react";
+import calcDueDate from "../../Helpers/calcDueDate";
+
+export default function DisplayInvoice({ invoices }) {
+  const { invoiceId } = useParams();
+  const invoice = useMemo(
+    () => invoices.find((inv) => String(inv.id) === invoiceId),
+    [invoices, invoiceId]
+  );
 
   const hasItemTaxes = invoice.items.some((item) => item.tax > 0);
   const customer = invoice.customer || {};
-  const customerName = customer.name || "";
-  const customerEmail = customer.email || "";
-  const customerAddress = customer.address || "";
+
+  const dateData = calcDueDate(invoice);
+
+  useEffect(() => {
+    document.title = `Invoice-${invoice.invoice_no || invoice.invoice_name}`;
+  }, [invoice]);
 
   return (
-    <div
-      id="invoice-template"
-      className="mx-auto max-w-[700px] bg-white p-8 font-sans text-sm text-gray-800 rounded shadow"
-    >
+    <div className="max-w-[800px] mx-auto p-6 bg-gray-50 rounded shadow-md">
       {/* Header */}
       <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold mb-1">{invoice.invoice_name}</h1>
+        <h1 className="text-4xl font-bold mb-1 text-gray-800">
+          {invoice.invoice_name}
+        </h1>
         <p className="text-gray-600">
-          Invoice No: <span className="font-semibold">{invoice.no}</span>
+          Invoice No:{" "}
+          <span className="font-semibold">{invoice.invoice_no}</span>
         </p>
+
+        <div className="mt-2 flex justify-center items-center gap-2">
+          <Chip
+            label={invoice.status}
+            color={
+              invoice.status === "Draft"
+                ? "warning"
+                : invoice.status === "Paid"
+                ? "success"
+                : "default"
+            }
+            variant="filled"
+          />
+          <Chip
+            icon={<CircleAlert />}
+            label={dateData.dueBadge.text}
+            color={dateData.dueBadge.color}
+            variant="outlined"
+          />
+        </div>
       </div>
 
       {/* Invoice & Customer Info */}
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-6">
         <div>
           <p>
             <strong>Issue Date:</strong> {invoice.issueDate}
@@ -36,9 +65,9 @@ export default function InvoiceTemplate({ invoice }) {
         </div>
         <div className="text-right">
           <p className="font-semibold">Bill To:</p>
-          {customerName && <p>{customerName}</p>}
-          {customerEmail && <p>{customerEmail}</p>}
-          {customerAddress && <p>{customerAddress}</p>}
+          {customer.name && <p>{customer.name}</p>}
+          {customer.email && <p>{customer.email}</p>}
+          {customer.address && <p>{customer.address}</p>}
         </div>
       </div>
 
@@ -75,18 +104,30 @@ export default function InvoiceTemplate({ invoice }) {
       </table>
 
       {/* Totals */}
-      <div className="flex justify-end">
+      <div className="flex justify-end mb-6">
         <div className="w-64 space-y-2 text-right bg-white shadow p-4 rounded">
           <p>
             <strong>Subtotal:</strong> ${invoice.itemsSubtotal.toFixed(2)}
           </p>
           <p>
-            <strong>Global Tax:</strong> ${invoice.taxAmount.toFixed(2)}
+            <strong>Tax:</strong> ${invoice.taxAmount.toFixed(2)}
           </p>
-          <p className="text-lg font-bold">
+          <p className="text-xl font-bold">
             Total: ${invoice.total.toFixed(2)}
           </p>
         </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end mb-4">
+        <NavLink to={`/invoices/view/${invoice.id}/pdf-preview`}>
+          <Button variant="contained" color="success">
+            View as PDF template
+          </Button>
+        </NavLink>
+
+        {/* <Button variant="outlined" color="primary">Edit</Button>
+        <Button variant="outlined" color="error">Delete</Button> */}
       </div>
     </div>
   );

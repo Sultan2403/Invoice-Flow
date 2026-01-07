@@ -8,6 +8,8 @@ import { getInvoices } from "./Utils/helpers";
 import Dashboard from "./Components/Secondary/Dashboard/dashboard";
 import { useEffect, useState } from "react";
 import InvoiceTemplate from "./Components/Secondary/Invoice/UI/Templates/invoiceTemplate";
+import DisplayInvoice from "./Components/Secondary/Invoice/UI/Display/invoiceDisplay";
+import PreviewInvoice from "./Components/Secondary/Invoice/UI/Templates/preview";
 
 function App() {
   const [invoices, setInvoices] = useState(getInvoices([]));
@@ -34,7 +36,11 @@ function App() {
           <Route path="invoices/create" element={<Create_Invoice />} />
           <Route
             path="invoices/view/:invoiceId"
-            element={<InvoiceTemplate invoices={invoices} />}
+            element={<DisplayInvoice invoices={invoices} />}
+          />
+          <Route
+            path="invoices/view/:invoiceId/pdf-preview"
+            element={<PreviewInvoice invoices={invoices} />}
           />
         </Route>
       </Routes>
