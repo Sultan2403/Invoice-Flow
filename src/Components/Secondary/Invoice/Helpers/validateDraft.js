@@ -1,4 +1,4 @@
-export function ValidateDraft() {
+export function ValidateDraft({ draftItem, hasLocalTax }) {
   const errs = {};
   if (!draftItem.name.trim()) {
     errs.name = "Item name is required";

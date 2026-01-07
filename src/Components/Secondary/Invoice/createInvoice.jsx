@@ -107,8 +107,9 @@ export default function CreateInvoice() {
   // Saves draft and registers it as an official items
 
   function SaveDraft() {
-    setDraftErrors(ValidateDraft());
-    if (Object.keys(ValidateDraft()).length > 0) return;
+    const validationErrs = ValidateDraft({ draftItem, hasLocalTax });
+    setDraftErrors(validationErrs);
+    if (Object.keys(validationErrs).length > 0) return;
 
     const finalDraftItem = finalizeItemStructure();
 
@@ -139,8 +140,9 @@ export default function CreateInvoice() {
   // Confirms edits and makes sure they get saved......
 
   function saveEdits() {
-    setDraftErrors(ValidateDraft());
-    if (Object.keys(ValidateDraft()).length > 0) return;
+    const validationErrs = ValidateDraft({ draftItem, hasLocalTax });
+    setDraftErrors(validationErrs);
+    if (Object.keys(validationErrs).length > 0) return;
 
     const finalItem = finalizeItemStructure();
 
