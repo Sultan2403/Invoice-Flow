@@ -1,20 +1,16 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
 import { useState, useEffect } from "react";
-import {
-  submitInvoice,
-  validateInvoice,
-  calcLocalTax,
-  calcGlobalTax,
-} from "../../../Utils/helpers";
+import { calcGlobalFinancials } from "./Helpers/calcFinancials";
+import { validateInvoice } from "./Helpers/validateInvoice";
+import { submitInvoice } from "./Helpers/submitInvoice";
+import { finalizeItemStructure } from "./Helpers/finalizeItemStructure";
+import { ValidateDraft } from "./Helpers/validateDraft";
 import {
   Check,
   CircleAlert,
-  EditIcon,
   FilePlus,
   PlusIcon,
-  Star,
-  Trash2,
   Trash2Icon,
   XIcon,
 } from "lucide-react";
@@ -56,13 +52,14 @@ export default function CreateInvoice() {
   // Helpers :)
 
   const [editingItemId, setEditingItemId] = useState(null);
+
   // Total and tax calculations
 
-  const itemsSubtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
-  const itemsTotal = items.reduce((acc, item) => acc + item.total, 0);
-  const globalTaxValues = calcGlobalTax({ items, globalTax });
+  const globalFinancialsValues = calcGlobalFinancials({ items, globalTax });
 
-  // ----------------------------------- Tax functions.....--------------------------------------------
+  //  Tax functions
+
+  // I believe the func names are self explanatory :)
 
   function AddLocalTax() {
     setHasLocalTax(true);
@@ -82,9 +79,13 @@ export default function CreateInvoice() {
     setGlobalTax(0);
   }
 
-  // ------------------------------ ITEMS LOGIC.......... ----------------------------------
+  // -
+  // -
+  // -
 
-  function AddRow() {
+  // Draft/draftItem functions.....
+
+  function AddDraft() {
     setDraftItems({
       id: crypto.randomUUID(),
       name: "",
@@ -93,13 +94,41 @@ export default function CreateInvoice() {
       quantity: 1,
       price: 0,
     });
+
+    // Creates a new draft item and appends it to the UI
   }
+
+  // Function for draft item removal....
 
   function removeItem(id) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   }
 
-  //-------------------------------- ITEM EDIT LOGIC.......... ----------------------------------
+  // Saves draft and registers it as an official items
+
+  function SaveDraft() {
+    setDraftErrors(ValidateDraft());
+    if (Object.keys(ValidateDraft()).length > 0) return;
+
+    const finalDraftItem = finalizeItemStructure();
+
+    setItems((prevItems) => [...prevItems, finalDraftItem]);
+
+    setDraftItems(null);
+    setHasLocalTax(false);
+    setDraftErrors({});
+  }
+
+  // Deletes draft and discard previous user data
+
+  function DeleteDraft() {
+    setDraftItems(null);
+    setHasLocalTax(false);
+    setDraftErrors({});
+  }
+
+  // Initializes edit state
+
   function StartItemEdit(id) {
     const itemToEdit = items.find((item) => item.id === id);
     // Take a snapshot
@@ -107,17 +136,10 @@ export default function CreateInvoice() {
     setEditingItemId(id); // mark this item as editing
   }
 
-  function finalizeItemStructure() {
-    const data = calcLocalTax({ draftItem });
-
-    const finalDraftItem = {
-      ...draftItem,
-      ...data,
-    };
-    return finalDraftItem;
-  }
+  // Confirms edits and makes sure they get saved......
 
   function saveEdits() {
+    setDraftErrors(ValidateDraft());
     if (Object.keys(ValidateDraft()).length > 0) return;
 
     const finalItem = finalizeItemStructure();
@@ -133,6 +155,8 @@ export default function CreateInvoice() {
     setDraftErrors({});
   }
 
+  // Discards edit state along with any changes made during edit
+
   function CancelEdits() {
     setDraftItems(null);
     setEditingItemId(null);
@@ -140,69 +164,21 @@ export default function CreateInvoice() {
     setDraftErrors({});
   }
 
-  // ------------------------------ DRAFT ITEM LOGIC.......... ----------------------------------
+  // Submit handler
 
-  // -------------------- VALIDATION LOGIC.......... --------------------------
-
-  function ValidateDraft() {
-    const errs = {};
-    if (!draftItem.name.trim()) {
-      errs.name = "Item name is required";
-    }
-    if (!draftItem.description.trim()) {
-      errs.description = "Item description is required";
-    }
-    if (typeof draftItem.quantity !== "number" || isNaN(draftItem.quantity)) {
-      errs.quantity = "Quantity must be a valid number";
-    } else if (draftItem.quantity <= 0) {
-      errs.quantity = "Quantity must be greater than zero";
-    }
-
-    if (typeof draftItem.price !== "number" || isNaN(draftItem.price)) {
-      errs.price = "Price must be a valid number";
-    } else if (draftItem.price <= 0) {
-      errs.price = "Price must be greater than zero";
-    }
-
-    if (hasLocalTax) {
-      if (typeof draftItem.tax !== "number" || isNaN(draftItem.tax)) {
-        errs.tax = "Tax must be a valid number";
-      } else if (draftItem.tax <= 0) {
-        errs.tax = "Tax must be greater than zero";
-      }
-    }
-
-    setDraftErrors(errs);
-    return errs;
-  }
-
-  // -------------------- SAVE, DELETE, EDIT LOGIC.......... --------------------------
-
-  function SaveDraft() {
-    if (Object.keys(ValidateDraft()).length > 0) return;
-
-    const finalDraftItem = finalizeItemStructure();
-
-    setItems((prevItems) => [...prevItems, finalDraftItem]);
-
-    setDraftItems(null);
-    setHasLocalTax(false);
-    setDraftErrors({});
-  }
-
-  function DeleteDraft() {
-    setDraftItems(null);
-    setHasLocalTax(false);
-    setDraftErrors({});
-  }
+  // Calls other smaller funcs to make the submit possible
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    // Here the customer obj is structured
 
     const customer = {
       id: crypto.randomUUID(),
       ...customerData,
     };
+
+    // Here the invoice is structured
 
     const invoice = {
       // INV METADATA
@@ -216,11 +192,15 @@ export default function CreateInvoice() {
 
       customer, // Customer Details
 
-      ...globalTaxValues,
+      ...globalFinancialsValues,
     };
+
+    // Validation runs here....
 
     const validationErrors = validateInvoice(invoice);
     setErrors(validationErrors);
+
+    // If there are no errors proceed with the submit....
 
     if (Object.keys(validationErrors).length === 0) {
       submitInvoice(invoice);
@@ -229,9 +209,14 @@ export default function CreateInvoice() {
       return;
     }
 
+    // Runs if there were actually errors
+    // And provides feedback to the user
+
     setSuccess(false);
     setFeedback(true);
   }
+
+  // This useEffect is to make sure the user always gets feedback
 
   useEffect(() => {
     if (!success) return;
@@ -255,6 +240,10 @@ export default function CreateInvoice() {
 
     return () => clearTimeout(timeout);
   }, [success]);
+
+  // JSX/HTML section
+
+  // Yup that's the actual UI :)
 
   return (
     <div className="min-h-screen flex justify-center bg-gray-50 p-4 sm:p-6">
@@ -553,15 +542,10 @@ export default function CreateInvoice() {
             <div className="bg-gray-50 p-3 rounded text-right font-bold">
               <div>
                 Subtotal: $
-                {hasGlobalTax
-                  ? calcGlobalTax({ items, globalTax }).itemsSubtotal.toFixed(2)
-                  : itemsSubtotal.toFixed(2)}
+                {calcGlobalFinancials({ globalTax, items }).itemsSubtotal}
               </div>
               <div>
-                Total: $
-                {hasGlobalTax
-                  ? calcGlobalTax({ items, globalTax }).total
-                  : itemsTotal.toFixed(2)}
+                Total: ${calcGlobalFinancials({ globalTax, items }).total}
               </div>
             </div>
           )}
@@ -571,7 +555,7 @@ export default function CreateInvoice() {
             <Button
               type="button"
               startIcon={<PlusIcon />}
-              onClick={AddRow}
+              onClick={AddDraft}
               variant="outlined"
               disabled={Boolean(draftItem)}
             >
@@ -625,3 +609,7 @@ export default function CreateInvoice() {
     </div>
   );
 }
+
+// Trust me I tried to make this component smaller -_-
+
+//  Well it is what it is ¯\_(ツ)_/¯
