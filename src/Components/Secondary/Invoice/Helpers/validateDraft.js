@@ -23,6 +23,8 @@ export function ValidateDraft({ draftItem, hasLocalTax }) {
       errs.tax = "Tax must be a valid number";
     } else if (draftItem.tax <= 0) {
       errs.tax = "Tax must be greater than zero";
+    } else if (draftItem.tax > 100) {
+      errs.tax = "Tax must be between 0 and 100";
     }
   }
 

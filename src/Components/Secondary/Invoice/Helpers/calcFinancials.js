@@ -10,9 +10,17 @@ export function calcLocalTax({ draftItem }) {
 
 export function calcGlobalFinancials({ globalTax, items }) {
   const itemsSubtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
+  const itemsTotal = items.reduce((acc, item) => acc + item.total, 0);
   const taxRate = globalTax / 100;
-  const taxAmount = itemsSubtotal * taxRate; // The actual amount the customer is charged
-  const total = itemsSubtotal + taxAmount;
+  const taxAmount = itemsTotal * taxRate; // The actual amount the customer is charged
+  const total = itemsTotal + taxAmount;
 
-  return { itemsSubtotal, taxAmount, taxRate, total };
+  return {
+    itemsTotal,
+    taxAmount,
+    taxRate,
+    total,
+    tax: globalTax,
+    itemsSubtotal,
+  };
 }

@@ -71,5 +71,14 @@ export function validateInvoice(invoice) {
     errors.items = "At least one item is required to create an invoice";
   }
 
+  // Taxes
+  if (typeof invoice.tax !== "number" || isNaN(invoice.tax)) {
+    errors.tax = "Tax must be a valid number";
+  } else if (invoice.tax <= 0) {
+    errors.tax = "Tax must be greater than zero";
+  } else if (invoice.tax > 100) {
+    errors.tax = "Tax must be between 0 and 100";
+  }
+
   return errors;
 }

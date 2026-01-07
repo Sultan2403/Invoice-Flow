@@ -1,6 +1,6 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { calcGlobalFinancials } from "./Helpers/calcFinancials";
 import { validateInvoice } from "./Helpers/validateInvoice";
 import { submitInvoice } from "./Helpers/submitInvoice";
@@ -55,7 +55,12 @@ export default function CreateInvoice() {
 
   // Total and tax calculations
 
-  const globalFinancialsValues = calcGlobalFinancials({ items, globalTax });
+  const localSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const localTotal = items.reduce((sum, item) => sum + item.total, 0);
+  const globalFinancialsValues = useMemo(
+    () => calcGlobalFinancials({ items, globalTax }),
+    [globalTax, items]
+  );
 
   //  Tax functions
 
@@ -111,7 +116,7 @@ export default function CreateInvoice() {
     setDraftErrors(validationErrs);
     if (Object.keys(validationErrs).length > 0) return;
 
-    const finalDraftItem = finalizeItemStructure();
+    const finalDraftItem = finalizeItemStructure({ draftItem });
 
     setItems((prevItems) => [...prevItems, finalDraftItem]);
 
@@ -144,7 +149,7 @@ export default function CreateInvoice() {
     setDraftErrors(validationErrs);
     if (Object.keys(validationErrs).length > 0) return;
 
-    const finalItem = finalizeItemStructure();
+    const finalItem = finalizeItemStructure({ draftItem });
 
     setItems((prevItems) =>
       prevItems.map((item) => (item.id === editingItemId ? finalItem : item))
@@ -249,15 +254,16 @@ export default function CreateInvoice() {
 
   return (
     <div className="min-h-screen flex justify-center bg-gray-50 p-4 sm:p-6">
-      <FormControl className="w-full max-w-4xl">
+      <FormControl className="w-full max-w-5xl">
         <form
           onSubmit={handleSubmit}
           noValidate
           className="bg-white p-6 rounded-lg shadow-md space-y-6"
         >
+          {/* HEADER */}
           <h2 className="text-2xl font-semibold text-center">Create Invoice</h2>
 
-          {/* Invoice Meta */}
+          {/* INVOICE METADATA */}
           <section className="grid gap-4 sm:grid-cols-2">
             <TextField
               label="Invoice Name *"
@@ -307,39 +313,37 @@ export default function CreateInvoice() {
               helperText={errors.customer_address}
             />
             <TextField
-              label="Issue Date"
+              label="Issue Date *"
               type="date"
               value={issueDate}
-              error={errors.issueDate}
-              helperText={errors.issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
               fullWidth
+              error={Boolean(errors.issueDate)}
+              helperText={errors.issueDate}
               slotProps={{
+                htmlInput: { min: today },
                 inputLabel: { shrink: true },
-                htmlInput: {
-                  min: today,
-                },
               }}
             />
             <TextField
-              label="Due Date"
+              label="Due Date *"
               type="date"
               value={dueDate || ""}
-              error={errors.dueDate}
-              helperText={errors.dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               fullWidth
+              error={Boolean(errors.dueDate)}
+              helperText={errors.dueDate}
               slotProps={{
-                inputLabel: { shrink: true },
                 htmlInput: { min: issueDate },
+                inputLabel: { shrink: true },
               }}
             />
           </section>
 
-          {/* Draft Item Editor */}
+          {/* DRAFT ITEM EDITOR */}
           {draftItem && (
             <fieldset className="border rounded-md p-4 bg-gray-50 space-y-4">
-              <legend className="sr-only">Add or edit item</legend>
+              <legend className="text-sm font-medium">Add / Edit Item</legend>
               <div className="grid gap-4 sm:grid-cols-6">
                 <TextField
                   label="Item Name"
@@ -352,6 +356,7 @@ export default function CreateInvoice() {
                   helperText={draftErrs.name}
                   required
                 />
+
                 <TextField
                   label="Description"
                   value={draftItem.description}
@@ -359,11 +364,20 @@ export default function CreateInvoice() {
                     setDraftItems({ ...draftItem, description: e.target.value })
                   }
                   fullWidth
-                  sm={{ gridColumn: "span 3" }}
+                  multiline
+                  minRows={3}
+                  maxRows={7}
                   error={Boolean(draftErrs.description)}
                   helperText={draftErrs.description}
                   required
+                  slotProps={{
+                    inputLabel: { shrink: true },
+                    textarea: {
+                      className: "resize-none p-2 border rounded-md ",
+                    },
+                  }}
                 />
+
                 <TextField
                   label="Quantity"
                   type="number"
@@ -373,12 +387,13 @@ export default function CreateInvoice() {
                   }
                   error={Boolean(draftErrs.quantity)}
                   helperText={draftErrs.quantity}
-                  slotProps={{
-                    inputLabel: { shrink: true },
-                    htmlInput: { min: 1 },
-                  }}
                   required
+                  slotProps={{
+                    htmlInput: { min: 1 },
+                    inputLabel: { shrink: true },
+                  }}
                 />
+
                 <TextField
                   label="Price ($)"
                   type="number"
@@ -388,12 +403,12 @@ export default function CreateInvoice() {
                   }
                   error={Boolean(draftErrs.price)}
                   helperText={draftErrs.price}
-                  slotProps={{
-                    inputLabel: { shrink: true },
-                    htmlInput: { min: 0o1 },
-                  }}
                   required
+                  slotProps={{
+                    htmlInput: { min: 0.01 },
+                  }}
                 />
+
                 {hasLocalTax && (
                   <>
                     <TextField
@@ -406,27 +421,30 @@ export default function CreateInvoice() {
                       error={Boolean(draftErrs.tax)}
                       helperText={draftErrs.tax}
                       slotProps={{
+                        htmlInput: { min: 0.01, max: 100 },
                         inputLabel: { shrink: true },
-                        htmlInput: { min: 0 },
                       }}
                     />
                     <Button
                       type="button"
                       onClick={RemoveLocalTax}
                       variant="outlined"
-                      aria-label="Remove local tax"
+                      color="error"
+                      className="h-fit mt-1"
                     >
-                      <XIcon />
+                      Remove Tax
                     </Button>
                   </>
                 )}
-                <div className="flex justify-end gap-2 sm:col-span-6">
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 sm:col-span-6 justify-end">
                   {editingItemId ? (
                     <Button
                       type="button"
                       onClick={saveEdits}
                       startIcon={<FilePlus />}
-                      variant="outlined"
+                      variant="contained"
                     >
                       Save Edits
                     </Button>
@@ -435,7 +453,7 @@ export default function CreateInvoice() {
                       type="button"
                       onClick={SaveDraft}
                       startIcon={<PlusIcon />}
-                      variant="outlined"
+                      variant="contained"
                     >
                       Save
                     </Button>
@@ -444,16 +462,16 @@ export default function CreateInvoice() {
                     type="button"
                     onClick={AddLocalTax}
                     startIcon={<PlusIcon />}
-                    variant="contained"
-                    color="info"
+                    variant="outlined"
+                    disabled={hasLocalTax}
                   >
                     Add Tax
                   </Button>
                   <Button
                     type="button"
                     onClick={editingItemId ? CancelEdits : DeleteDraft}
+                    variant="outlined"
                     color="error"
-                    variant="text"
                   >
                     Cancel
                   </Button>
@@ -462,67 +480,100 @@ export default function CreateInvoice() {
             </fieldset>
           )}
 
-          {/* Items List */}
+          {/* ITEMS SECTION - CARD LAYOUT */}
           {items.length > 0 && (
-            <section className="overflow-x-auto space-y-2">
-              <div className="hidden sm:grid grid-cols-8 font-semibold border-b pb-2">
-                <div>Description</div>
-                <div>Qty</div>
-                <div>Price</div>
-                <div>Total</div>
-                <div className="col-span-2"></div>
-              </div>
-              {items.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className={`grid sm:grid-cols-8 gap-2 items-center text-sm ${
-                    idx % 2 === 0 ? "bg-gray-50" : ""
-                  } ${editingItemId === item.id ? "opacity-50" : ""}`}
-                >
-                  <div>{item.name}</div>
-                  <div className="sm:col-span-4">{item.description}</div>
-                  <div>{item.quantity}</div>
-                  <div>${item.price.toFixed(2)}</div>
-                  <div className="col-span-3 flex gap-2 sm:justify-end">
-                    <Button
-                      type="button"
-                      onClick={() => StartItemEdit(item.id)}
-                      startIcon={<PlusIcon />}
-                      variant="outlined"
-                      size="small"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      startIcon={<Trash2Icon />}
-                      variant="contained"
-                      size="small"
-                      color="error"
-                    >
-                      Remove
-                    </Button>
+            <section className="space-y-3">
+              {items.map((item) => {
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white border rounded-lg p-4 shadow-sm flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
+                  >
+                    {/* Left: Info + stats */}
+                    <div className="flex-1 space-y-2">
+                      <h3 className="font-semibold text-lg">{item.name}</h3>
+                      <p className="text-gray-700 text-sm sm:text-base">
+                        {item.description}
+                      </p>
+
+                      {/* Stats: flex row on desktop, stacked on mobile */}
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1 sm:gap-4 text-md text-gray-700">
+                        <div className="sm:flex sm:items-center border-l border-gray-300 pl-2">
+                          <span className="font-medium mr-1">Qty:</span>
+                          <span>{item.quantity}</span>
+                        </div>
+                        <div className="sm:flex sm:items-center border-l border-gray-300 pl-2">
+                          <span className="font-medium mr-1">Price:</span>
+                          <span>${item.price.toFixed(2)}</span>
+                        </div>
+                        <div className="sm:flex sm:items-center border-l border-gray-300 pl-2">
+                          <span className="font-medium mr-1">Local Tax:</span>
+                          <span>{item.tax}%</span>
+                        </div>
+                        <div className="sm:flex sm:items-center border-l border-gray-300 pl-2">
+                          <span className="font-medium mr-1">Global Tax:</span>
+                          <span>{globalTax}%</span>
+                        </div>
+                        <div className="sm:flex sm:items-center border-l border-gray-300 pl-2 font-bold">
+                          <span className="font-medium mr-1">Total:</span>
+                          <span>${item.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Actions, same width */}
+                    <div className="flex gap-2 sm:flex-col sm:items-end mt-2 sm:mt-0">
+                      <Button
+                        type="button"
+                        onClick={() => StartItemEdit(item.id)}
+                        variant="outlined"
+                        size="small"
+                        className="w-24"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        className="w-24"
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-              <Button
-                type="button"
-                disabled={hasGlobalTax}
-                onClick={AddGlobalTax}
-              >
-                Add a global tax?
-              </Button>
+                );
+              })}
+
+              {!hasGlobalTax && (
+                <Button
+                  type="button"
+                  onClick={AddGlobalTax}
+                  variant="outlined"
+                  className="mt-2"
+                >
+                  Add Global Tax?
+                </Button>
+              )}
             </section>
           )}
 
+          {/* GLOBAL TAX */}
           {hasGlobalTax && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               <TextField
                 label="Global Tax (%)"
                 type="number"
                 value={globalTax || ""}
                 onChange={(e) => setGlobalTax(+e.target.value)}
+                error={Boolean(errors.tax)}
+                helperText={errors.tax}
+                slotProps={{
+                  htmlInput: { min: 0.01, max: 100 },
+                  inputLabel: { shrink: true },
+                }}
               />
               <Button
                 type="button"
@@ -534,31 +585,27 @@ export default function CreateInvoice() {
               </Button>
             </div>
           )}
-
           {hasGlobalTax && globalTax > 0 && (
             <div>Tax applying to all items: {globalTax}%</div>
           )}
 
-          {/* Totals */}
+          {/* TOTALS */}
           {items.length > 0 && (
-            <div className="bg-gray-50 p-3 rounded text-right font-bold">
+            <div className="bg-gray-50 p-3 rounded text-right font-bold space-y-1">
               <div>
-                Subtotal: $
-                {calcGlobalFinancials({ globalTax, items }).itemsSubtotal}
+                Subtotal: ${globalFinancialsValues.itemsSubtotal.toFixed(2)}
               </div>
-              <div>
-                Total: ${calcGlobalFinancials({ globalTax, items }).total}
-              </div>
+              <div>Total: ${globalFinancialsValues.total.toFixed(2)}</div>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex justify-between mt-4">
+          {/* ACTIONS */}
+          <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
             <Button
               type="button"
               startIcon={<PlusIcon />}
               onClick={AddDraft}
-              variant="outlined"
+              variant="contained"
               disabled={Boolean(draftItem)}
             >
               Add Item
@@ -574,7 +621,7 @@ export default function CreateInvoice() {
           </div>
         </form>
 
-        {/* Feedback Modal */}
+        {/* FEEDBACK MODAL */}
         <SimpleModal open={feedback} onClose={() => setFeedback(false)}>
           <div role="alert" className="flex flex-col items-center gap-3">
             {success && (
@@ -586,24 +633,13 @@ export default function CreateInvoice() {
               </div>
             )}
             {Object.keys(errors).length > 0 && (
-              <>
-                {errors.items ? (
-                  <div
-                    role="status"
-                    className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded"
-                  >
-                    <CircleAlert aria-hidden="true" /> {errors.items}
-                  </div>
-                ) : (
-                  <div
-                    role="status"
-                    className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded"
-                  >
-                    <CircleAlert aria-hidden="true" /> Please fix the errors and
-                    try again
-                  </div>
-                )}
-              </>
+              <div
+                role="status"
+                className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded"
+              >
+                <CircleAlert aria-hidden="true" />{" "}
+                {errors.items || "Please fix the errors and try again"}
+              </div>
             )}
           </div>
         </SimpleModal>
