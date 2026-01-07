@@ -1,11 +1,11 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
 import { useState, useEffect, useMemo } from "react";
-import { calcGlobalFinancials } from "./Helpers/calcFinancials";
-import { validateInvoice } from "./Helpers/validateInvoice";
-import { submitInvoice } from "./Helpers/submitInvoice";
-import { finalizeItemStructure } from "./Helpers/finalizeItemStructure";
-import { ValidateDraft } from "./Helpers/validateDraft";
+import { calcGlobalFinancials } from "../Helpers/calcFinancials";
+import { validateInvoice } from "../Helpers/validateInvoice";
+import { submitInvoice } from "../Helpers/submitInvoice";
+import { finalizeItemStructure } from "../Helpers/finalizeItemStructure";
+import { ValidateDraft } from "../Helpers/validateDraft";
 import {
   Check,
   CircleAlert,
@@ -14,7 +14,7 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
-import SimpleModal from "../../UI/Modal/modal";
+import SimpleModal from "../../../UI/Modal/modal";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
