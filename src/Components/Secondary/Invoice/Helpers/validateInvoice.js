@@ -13,7 +13,7 @@ export function validateInvoice(invoice) {
 
   // --- Customer Name ---
   const customerNameRegex = /^[a-zA-Z0-9\s.'-]{1,50}$/;
-  if (!invoice.customer.customer_name?.trim()) {
+  if (!invoice.customer.name?.trim()) {
     errors.customer_name = "Customer name is required";
   } else if (!customerNameRegex.test(invoice.customer.customer_name.trim())) {
     errors.customer_name =
@@ -21,7 +21,7 @@ export function validateInvoice(invoice) {
   }
 
   // --- Customer Email (optional) ---
-  if (invoice.customer.customer_email?.trim()) {
+  if (invoice.customer.email?.trim()) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(invoice.customer.customer_email.trim())) {
       errors.customer_email = "Invalid email format";
@@ -29,7 +29,7 @@ export function validateInvoice(invoice) {
   }
 
   // --- Customer Address (optional) ---
-  if (invoice.customer.customer_address?.trim()) {
+  if (invoice.customer.address?.trim()) {
     const addressRegex = /^[a-zA-Z0-9\s.,#-]{0,100}$/;
     if (!addressRegex.test(invoice.customer.customer_address.trim())) {
       errors.customer_address =

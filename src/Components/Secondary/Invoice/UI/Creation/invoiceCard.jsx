@@ -36,7 +36,10 @@ export default function InvoiceTable({ invoices }) {
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{invoice.invoice_name}</TableCell>
                     <TableCell>{invoice.customer.customer_name}</TableCell>
-                    <TableCell align="right">{invoice.items.length}</TableCell>
+                    <TableCell align="right">
+                      {invoice.items.length}{" "}
+                      {invoice.items.length > 1 ? "Items" : "Item"}
+                    </TableCell>
                     <TableCell align="right">{invoice.status}</TableCell>
                     <TableCell align="right">
                       ${invoice.itemsSubtotal.toFixed(2)}

@@ -55,8 +55,6 @@ export default function CreateInvoice({ onInvoiceCreation }) {
 
   // Total and tax calculations
 
-  const localSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const localTotal = items.reduce((sum, item) => sum + item.total, 0);
   const globalFinancialsValues = useMemo(
     () => calcGlobalFinancials({ items, globalTax }),
     [globalTax, items]
@@ -277,11 +275,11 @@ export default function CreateInvoice({ onInvoiceCreation }) {
             />
             <TextField
               label="Customer Name *"
-              value={customerData.customer_name || ""}
+              value={customerData.name || ""}
               onChange={(e) =>
                 setCustomerData({
                   ...customerData,
-                  customer_name: e.target.value,
+                  name: e.target.value,
                 })
               }
               fullWidth
@@ -290,11 +288,11 @@ export default function CreateInvoice({ onInvoiceCreation }) {
             />
             <TextField
               label="Customer Email"
-              value={customerData.customer_email || ""}
+              value={customerData.email || ""}
               onChange={(e) =>
                 setCustomerData({
                   ...customerData,
-                  customer_email: e.target.value,
+                  email: e.target.value,
                 })
               }
               fullWidth
@@ -303,11 +301,11 @@ export default function CreateInvoice({ onInvoiceCreation }) {
             />
             <TextField
               label="Customer Address"
-              value={customerData.customer_address || ""}
+              value={customerData.address || ""}
               onChange={(e) =>
                 setCustomerData({
                   ...customerData,
-                  customer_address: e.target.value,
+                  address: e.target.value,
                 })
               }
               fullWidth
