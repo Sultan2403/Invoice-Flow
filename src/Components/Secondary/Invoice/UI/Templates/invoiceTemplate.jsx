@@ -38,6 +38,7 @@ export default function InvoiceTemplate({ invoices }) {
                 <td>{idx + 1}</td>
                 <td>{item.name}</td>
                 <td>{item.quantity}</td>
+                {item.status === "draft" && <td>{item.status}</td>}
                 <td>${item.price.toFixed(2)}</td>
               </tr>
             ))}

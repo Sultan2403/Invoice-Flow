@@ -20,7 +20,7 @@ export default function InvoiceTable({ invoices }) {
               <TableCell align="right">Items Count</TableCell>
               <TableCell align="right">Status</TableCell>
               <TableCell align="right">Subtotal ($)</TableCell>
-              <TableCell align="right">Global Tax (%)</TableCell>
+              <TableCell align="right">Tax on all items ($)</TableCell>
               <TableCell align="right">Total ($)</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
