@@ -1,4 +1,4 @@
-import { calcLocalTax } from "./calcFinancials";
+import { calcLocalTax } from "../Calculations/calcFinancials";
 
 export function finalizeItemStructure({ draftItem }) {
   const data = calcLocalTax({ draftItem });

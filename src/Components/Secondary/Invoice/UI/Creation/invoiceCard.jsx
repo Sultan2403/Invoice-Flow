@@ -6,8 +6,10 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { NavLink } from "react-router-dom";
+import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
 
-export default function InvoiceTable({ invoices }) {
+export default function InvoiceTable({}) {
+  const invoices = getInvoices();
   return (
     <div className="overflow-auto w-full h-full">
       <TableContainer component={Paper}>
@@ -34,7 +36,7 @@ export default function InvoiceTable({ invoices }) {
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   >
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{invoice.invoice_name}</TableCell>
+                    <TableCell>{invoice.name}</TableCell>
                     <TableCell>{invoice.customer.name}</TableCell>
                     <TableCell align="right">
                       {invoice.items.length}{" "}

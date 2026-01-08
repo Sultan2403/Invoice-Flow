@@ -1,11 +1,11 @@
 // TODO: Fix tax logic, it's shit right now. :)
 
 import { useState, useEffect, useMemo } from "react";
-import { calcGlobalFinancials } from "../../Helpers/calcFinancials";
-import { validateInvoice } from "../../Helpers/validateInvoice";
-import { submitInvoice } from "../../Helpers/submitInvoice";
-import { finalizeItemStructure } from "../../Helpers/finalizeItemStructure";
-import { ValidateDraft } from "../../Helpers/validateDraft";
+import { calcGlobalFinancials } from "../../Helpers/Calculations/calcFinancials";
+import { validateInvoice } from "../../Helpers/Validation//validateInvoice";
+import { submitInvoice } from "../../Helpers/Submissions/submitInvoice";
+import { finalizeItemStructure } from "../../Helpers/Submissions/finalizeItemStructure";
+import { ValidateDraft } from "../../Helpers/Validation/validateDraft";
 import {
   Check,
   CircleAlert,
@@ -191,7 +191,7 @@ export default function CreateInvoice({ onInvoiceCreation }) {
       issueDate,
       dueDate,
       createdAt: new Date().toISOString(),
-      invoice_name,
+      name: invoice_name,
       items,
       status: "Draft",
 

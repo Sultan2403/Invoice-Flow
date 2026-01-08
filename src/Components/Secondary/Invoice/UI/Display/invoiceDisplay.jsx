@@ -2,9 +2,11 @@ import { useMemo, useEffect } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import { Button, Chip } from "@mui/material";
 import { CircleAlert } from "lucide-react";
-import calcDueDate from "../../Helpers/calcDueDate";
+import calcDueDate from "../../Helpers/Calculations/calcDueDate";
+import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
 
-export default function DisplayInvoice({ invoices }) {
+export default function DisplayInvoice({}) {
+  const invoices = getInvoices();
   const { invoiceId } = useParams();
   const invoice = useMemo(
     () => invoices.find((inv) => String(inv.id) === invoiceId),
@@ -17,7 +19,7 @@ export default function DisplayInvoice({ invoices }) {
   const dateData = calcDueDate(invoice);
 
   useEffect(() => {
-    document.title = `Invoice-${invoice.invoice_no || invoice.invoice_name}`;
+    document.title = `Invoice-${invoice.no || invoice.name}`;
   }, [invoice]);
 
   return (
