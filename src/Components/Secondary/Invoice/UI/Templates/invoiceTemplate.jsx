@@ -49,7 +49,7 @@ export default function InvoiceTemplate({ invoice, template }) {
 
   return (
     <div
-      id="invoice-template"
+      id="invoice-preview"
       className={`relative mx-auto w-[794px] bg-white font-sans text-gray-800 ${styles.container}`}
     >
       {/* Header */}

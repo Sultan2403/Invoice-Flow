@@ -4,10 +4,10 @@ export function validateInvoice(invoice) {
 
   // --- Invoice Name ---
   const invoiceNameRegex = /^[a-zA-Z0-9\s._-]{1,50}$/;
-  if (!invoice.invoice_name?.trim()) {
-    errors.invoice_name = "Invoice name is required";
-  } else if (!invoiceNameRegex.test(invoice.invoice_name.trim())) {
-    errors.invoice_name =
+  if (!invoice.name?.trim()) {
+    errors.name = "Invoice name is required";
+  } else if (!invoiceNameRegex.test(invoice.name.trim())) {
+    errors.name =
       "Invoice name can include letters, numbers, spaces, '.', '-', '_' only (max 50 chars)";
   }
 

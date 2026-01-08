@@ -1,6 +1,6 @@
 import "./App.css";
 import Create_Invoice from "./Components/Secondary/Invoice/UI/Creation/createInvoice";
-import InvoiceTable from "./Components/Secondary/Invoice/UI/Creation/invoiceCard";
+import InvoiceTable from "./Components/Secondary/Invoice/UI/Display/invoiceCard";
 import { BrowserRouter, Route, Routes, useParams } from "react-router-dom";
 
 import Layout from "./Components/Main/Layout/layout";
