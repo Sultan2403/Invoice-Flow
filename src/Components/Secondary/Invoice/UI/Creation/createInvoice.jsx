@@ -1,4 +1,4 @@
-// TODO: Fix tax logic, it's shit right now. :)
+//  TODO : Try and refactor.... On God
 
 import { useState, useEffect, useMemo } from "react";
 import { calcGlobalFinancials } from "../../Helpers/Calculations/calcFinancials";
@@ -270,8 +270,8 @@ export default function CreateInvoice({ onInvoiceCreation }) {
               value={invoice_name}
               onChange={(e) => setInvoiceName(e.target.value)}
               fullWidth
-              error={Boolean(errors.invoice_name)}
-              helperText={errors.invoice_name}
+              error={Boolean(errors.name)}
+              helperText={errors.name}
             />
             <TextField
               label="Customer Name *"
@@ -283,8 +283,8 @@ export default function CreateInvoice({ onInvoiceCreation }) {
                 })
               }
               fullWidth
-              error={Boolean(errors.customer_name)}
-              helperText={errors.customer_name}
+              error={Boolean(errors.customer?.name)}
+              helperText={errors.customer?.name}
             />
             <TextField
               label="Customer Email"
@@ -296,8 +296,8 @@ export default function CreateInvoice({ onInvoiceCreation }) {
                 })
               }
               fullWidth
-              error={Boolean(errors.customer_email)}
-              helperText={errors.customer_email}
+              error={Boolean(errors.customer?.email)}
+              helperText={errors.customer?.email}
             />
             <TextField
               label="Customer Address"
@@ -309,8 +309,8 @@ export default function CreateInvoice({ onInvoiceCreation }) {
                 })
               }
               fullWidth
-              error={Boolean(errors.customer_address)}
-              helperText={errors.customer_address}
+              error={Boolean(errors.customer?.address)}
+              helperText={errors.customer?.address}
             />
             <TextField
               label="Issue Date *"

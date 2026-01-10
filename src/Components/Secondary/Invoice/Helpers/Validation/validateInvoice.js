@@ -1,6 +1,7 @@
 // -------------------- Invoice Helpers -----------------------------------------
 export function validateInvoice(invoice) {
   const errors = {};
+  errors.customer = {};
 
   // --- Invoice Name ---
   const invoiceNameRegex = /^[a-zA-Z0-9\s._-]{1,50}$/;
@@ -13,10 +14,10 @@ export function validateInvoice(invoice) {
 
   // --- Customer Name ---
   const customerNameRegex = /^[a-zA-Z0-9\s.'-]{1,50}$/;
-  if (!invoice.customer.name?.trim()) {
-    errors.customer_name = "Customer name is required";
+  if (!invoice.customer.name?.trim() || !invoice.customer.name) {
+    errors.customer.name = "Customer name is required";
   } else if (!customerNameRegex.test(invoice.customer.name.trim())) {
-    errors.customer_name =
+    errors.customer.name =
       "Customer name can include letters, numbers, spaces, apostrophe, period, hyphen (max 50 chars)";
   }
 
@@ -24,7 +25,7 @@ export function validateInvoice(invoice) {
   if (invoice.customer.email?.trim()) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(invoice.customer.email.trim())) {
-      errors.customer_email = "Invalid email format";
+      errors.customer.email = "Invalid email format";
     }
   }
 
@@ -32,7 +33,7 @@ export function validateInvoice(invoice) {
   if (invoice.customer.address?.trim()) {
     const addressRegex = /^[a-zA-Z0-9\s.,#-]{0,100}$/;
     if (!addressRegex.test(invoice.customer.address.trim())) {
-      errors.customer_address =
+      errors.customer.address =
         "Address can include letters, numbers, spaces, ',', '.', '#' or '-' (max 100 chars)";
     }
   }

@@ -9,10 +9,10 @@ import {
   getSavedTemplate,
   saveTemplate,
 } from "../../Helpers/Local Storage/templates";
+import useInvoiceId from "../../Hooks/useInvoice";
 
 export default function PreviewInvoice() {
-  const invoices = getInvoices();
-  const { invoiceId } = useParams();
+  const invoice = useInvoiceId(getInvoices());
   const [isPrinting, setIsPrinting] = useState(false);
 
   const TEMPLATES = [
@@ -22,8 +22,6 @@ export default function PreviewInvoice() {
   ];
 
   const [template, setTemplate] = useState(getSavedTemplate());
-
-  const invoice = invoices.find((inv) => inv.id === invoiceId);
 
   if (!invoice) {
     return (

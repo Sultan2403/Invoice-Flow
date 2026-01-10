@@ -9,6 +9,7 @@ import Dashboard from "./Components/Secondary/Dashboard/dashboard";
 
 import DisplayInvoice from "./Components/Secondary/Invoice/UI/Display/invoiceDisplay";
 import PreviewInvoice from "./Components/Secondary/Invoice/UI/Templates/preview";
+import Edit_Invoice from "./Components/Secondary/Invoice/UI/Editing/editInvoice";
 
 function App() {
   // optional: ensure invoices are loaded on mount
@@ -24,6 +25,7 @@ function App() {
             path="invoices/view/:invoiceId/pdf-preview"
             element={<PreviewInvoice />}
           />
+          <Route path="invoices/edit/:invoiceId" element={<Edit_Invoice />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
 import { Eye, PlusCircle, Pencil, Info } from "lucide-react";
 
@@ -102,12 +102,11 @@ export default function InvoiceTable() {
                         >
                           <Eye size={14} /> View
                         </NavLink>
-                        <button
-                          disabled
-                          className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-xs font-medium"
-                        >
-                          <Pencil size={14} /> Edit
-                        </button>
+                        <NavLink to={`/invoices/edit/${invoice.id}`}>
+                          <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-xs font-medium">
+                            <Pencil size={14} /> Edit
+                          </button>
+                        </NavLink>
                       </div>
                     </td>
                   </tr>
