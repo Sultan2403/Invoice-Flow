@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
+import { getInvoices } from "../../Helpers/Storage/getInvoices";
 import useInvoiceId from "../../Hooks/useInvoice";
 import { useState } from "react";
 import Button from "@mui/material/Button";

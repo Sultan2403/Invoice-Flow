@@ -1,8 +1,7 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-const exportPdf = async ({ invoice, onComplete }) => {
-  const element = document.getElementById("invoice-preview"); // wrap InvoiceTemplate with this id
+const exportPdf = async ({ invoice, element, onComplete }) => {
   const canvas = await html2canvas(element, { scale: 2 });
   const imgData = canvas.toDataURL("image/png");
 

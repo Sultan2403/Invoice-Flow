@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
+import { getInvoices } from "../../Helpers/Storage/getInvoices";
 import { Eye, PlusCircle, Pencil, Info } from "lucide-react";
 
 export default function InvoiceTable() {

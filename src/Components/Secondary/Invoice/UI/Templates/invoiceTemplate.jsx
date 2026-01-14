@@ -50,7 +50,7 @@ export default function InvoiceTemplate({ invoice, template }) {
   return (
     <div
       id="invoice-preview"
-      className={`relative mx-auto w-[794px] bg-white font-sans text-gray-800 ${styles.container}`}
+      className={`relative mx-auto w-[794px] bg-white font-sans text-gray-800 ${styles.container} printable`}
     >
       {/* Header */}
       <div className={`mb-8 ${styles.headerAlign}`}>

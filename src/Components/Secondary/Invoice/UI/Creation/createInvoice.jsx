@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { calcGlobalFinancials } from "../../Helpers/Calculations/calcFinancials";
 import { validateInvoice } from "../../Helpers/Validation//validateInvoice";
-import { submitInvoice } from "../../Helpers/Submissions/submitInvoice";
+import { submitInvoice } from "../../Helpers/Storage/submitInvoice";
 import { finalizeItemStructure } from "../../Helpers/Submissions/finalizeItemStructure";
 import { ValidateDraft } from "../../Helpers/Validation/validateDraft";
 import {
@@ -19,7 +19,7 @@ import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
-export default function CreateInvoice({ onInvoiceCreation }) {
+export default function CreateInvoice() {
   // Invoice metadata
 
   const [invoice_name, setInvoiceName] = useState("");
@@ -212,7 +212,7 @@ export default function CreateInvoice({ onInvoiceCreation }) {
       submitInvoice(invoice);
       setSuccess(true);
       setFeedback(true);
-      onInvoiceCreation();
+
       return;
     }
 

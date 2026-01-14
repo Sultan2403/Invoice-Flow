@@ -3,12 +3,12 @@ import { useParams } from "react-router-dom";
 import { Button } from "@mui/material";
 
 import InvoiceTemplate from "./invoiceTemplate";
-import exportPdf from "./exportpdf";
-import { getInvoices } from "../../Helpers/Local Storage/getInvoices";
+import exportPdf from "../../../../../Utils/exportpdf";
+import { getInvoices } from "../../Helpers/Storage/getInvoices";
 import {
   getSavedTemplate,
   saveTemplate,
-} from "../../Helpers/Local Storage/templates";
+} from "../../Helpers/Storage/templates";
 import useInvoiceId from "../../Hooks/useInvoice";
 
 export default function PreviewInvoice() {
@@ -30,6 +30,7 @@ export default function PreviewInvoice() {
   }
 
   document.title = invoice.name;
+  const element = document.getElementById("invoice-preview");
 
   const handleTemplateChange = (id) => {
     setTemplate(id);
@@ -39,7 +40,8 @@ export default function PreviewInvoice() {
   const handleExport = () => {
     setIsPrinting(true);
     exportPdf({
-      invoice,
+      receipt,
+      element,
       onComplete: () => setIsPrinting(false),
     });
   };
@@ -75,12 +77,9 @@ export default function PreviewInvoice() {
         </div>
 
         {/* Export PDF button right */}
-        <Button
-          onClick={handleExport}
-          disabled={isPrinting}
-          variant="contained"
-        >
-          {isPrinting ? "Printing…" : "Export PDF"}
+
+        <Button onClick={handleExport} loading={isPrinting} variant="contained">
+          {isPrinting ? "Downloading.." : "Download PDF"}
         </Button>
       </div>
 

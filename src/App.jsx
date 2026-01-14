@@ -10,9 +10,10 @@ import Dashboard from "./Components/Secondary/Dashboard/dashboard";
 import DisplayInvoice from "./Components/Secondary/Invoice/UI/Display/invoiceDisplay";
 import PreviewInvoice from "./Components/Secondary/Invoice/UI/Templates/preview";
 import Edit_Invoice from "./Components/Secondary/Invoice/UI/Editing/editInvoice";
+import Receipts from "./Components/Secondary/Reciepts/UI/Display/receipts";
+import Receipt_Preview from "./Components/Secondary/Reciepts/UI/Templates/preview";
 
 function App() {
-  // optional: ensure invoices are loaded on mount
   return (
     <BrowserRouter>
       <Routes>
@@ -26,6 +27,11 @@ function App() {
             element={<PreviewInvoice />}
           />
           <Route path="invoices/edit/:invoiceId" element={<Edit_Invoice />} />
+          <Route path="receipts" element={<Receipts />} />
+          <Route
+            path="receipts/view/:receiptId"
+            element={<Receipt_Preview />}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

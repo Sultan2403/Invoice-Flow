@@ -4,6 +4,7 @@ import {
   PlusIcon,
   ChevronLeft,
   ChevronRight,
+  ReceiptText,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -127,6 +128,26 @@ export default function Nav() {
                 <PlusIcon />
               </span>
               <span className={`${open ? "" : "hidden"}`}>Create Invoice</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="receipts"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <ReceiptText />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Reciepts</span>
             </NavLink>
           </li>
         </ul>

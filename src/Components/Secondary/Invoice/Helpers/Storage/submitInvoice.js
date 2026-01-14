@@ -5,7 +5,7 @@ export function submitInvoice(invoice) {
   invoice.no = `INV-${new Date().getFullYear()}-${String(
     existing.length
   ).padStart(3, "0")}`;
-  const updated = [invoice, ...existing];
+  const updated = [...existing, invoice];
 
   localStorage.setItem(INVOICE_KEY, JSON.stringify(updated));
 }
