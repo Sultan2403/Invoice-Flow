@@ -1,5 +1,7 @@
 import ReceiptTemplate from "./receiptTemplate";
 import exportPdf from "../../../../../Utils/exportpdf";
+import getReceipts from "../../Helpers/Storage/getReceipts";
+import useReceiptId from "../../Hooks/useReceipt";
 
 export default function PreviewReceipt() {
   const receipt = useReceiptId(getReceipts());
