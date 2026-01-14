@@ -1,7 +1,8 @@
+import getReceipts from "../../Helpers/Storage/getReceipts";
 import useReceiptId from "../../Hooks/useReceipt";
 
-export default function ReceiptTemplate({ template = "classic" }) {
-  const receipt = useReceiptId();
+export default function ReceiptTemplate({ template }) {
+  const receipt = useReceiptId(getReceipts());
 
   if (!receipt) {
     return (

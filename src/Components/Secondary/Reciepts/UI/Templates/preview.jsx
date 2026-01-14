@@ -2,11 +2,16 @@ import ReceiptTemplate from "./receiptTemplate";
 import exportPdf from "../../../../../Utils/exportpdf";
 import getReceipts from "../../Helpers/Storage/getReceipts";
 import useReceiptId from "../../Hooks/useReceipt";
+import getSavedReceiptTemplate from "../../Helpers/Storage/getSavedReceiptTemplate";
+import Button from "@mui/material/Button";
+import { useState } from "react";
 
 export default function PreviewReceipt() {
   const receipt = useReceiptId(getReceipts());
   const [isPrinting, setIsPrinting] = useState(false);
-  const [template, setTemplate] = useState(getSavedReceiptTemplate());
+  const [template, setTemplate] = useState(
+    getSavedReceiptTemplate() || "classic"
+  );
 
   if (!receipt) {
     return (
@@ -38,7 +43,7 @@ export default function PreviewReceipt() {
 
       {/* Controls */}
       <div className="flex justify-between items-center">
-        <Button variant="contained" onClick={handleExport}>
+        <Button variant="contained" loading={isPrinting} onClick={handleExport}>
           Download PDF
         </Button>
       </div>
