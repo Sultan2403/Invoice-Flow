@@ -1,3 +1,4 @@
+import updateInvoice from "../../../Invoice/Helpers/Storage/updateInvoice";
 import getReceipts from "../Storage/getReceipts";
 
 export default function generateReceipt({ invoice, paymentMethod }) {

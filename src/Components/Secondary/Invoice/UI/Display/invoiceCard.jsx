@@ -1,15 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { getInvoices } from "../../Helpers/Storage/getInvoices";
 import { Eye, PlusCircle, Pencil, Info } from "lucide-react";
+import { currencyFormatter } from "../../../../../Utils/helpers";
 
 export default function InvoiceTable() {
   const invoices = getInvoices();
   document.title = "Invoices";
-
-  const currencyFormatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
 
   // Show newest first
   const sortedInvoices = [...invoices].reverse();

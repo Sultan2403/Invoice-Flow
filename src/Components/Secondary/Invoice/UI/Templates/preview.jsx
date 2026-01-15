@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useRef, useState } from "react";
 import { Button } from "@mui/material";
 
 import InvoiceTemplate from "./invoiceTemplate";
@@ -14,6 +13,7 @@ import useInvoiceId from "../../Hooks/useInvoice";
 export default function PreviewInvoice() {
   const invoice = useInvoiceId(getInvoices());
   const [isPrinting, setIsPrinting] = useState(false);
+  const previewRef = useRef(null);
 
   const TEMPLATES = [
     { id: "classic", label: "Classic" },
@@ -21,7 +21,7 @@ export default function PreviewInvoice() {
     { id: "compact", label: "Compact" },
   ];
 
-  const [template, setTemplate] = useState(getSavedTemplate());
+  const [template, setTemplate] = useState(getSavedTemplate() || "classic");
 
   if (!invoice) {
     return (
@@ -29,8 +29,7 @@ export default function PreviewInvoice() {
     );
   }
 
-  document.title = invoice.name;
-  const element = document.getElementById("invoice-preview");
+  document.title = `Invoice ${invoice.name}`;
 
   const handleTemplateChange = (id) => {
     setTemplate(id);
@@ -38,10 +37,11 @@ export default function PreviewInvoice() {
   };
 
   const handleExport = () => {
+    if (!previewRef.current) return;
     setIsPrinting(true);
     exportPdf({
-      receipt,
-      element,
+      data: invoice,
+      element: previewRef.current,
       onComplete: () => setIsPrinting(false),
     });
   };
@@ -53,14 +53,15 @@ export default function PreviewInvoice() {
         Invoice Preview
       </h1>
       <p className="text-center text-gray-600">
-        Review your invoice before exporting it. Select a template or export
-        PDF.
+        Review your invoice before exporting. Select a template or export PDF.
       </p>
 
-      {/* Top controls */}
-      <div className="flex items-center justify-between gap-4 mt-4">
-        {/* Template buttons left */}
-        <div className="flex flex-wrap gap-2">
+      {/* Template selector + Export button */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-4">
+        <div className="flex flex-wrap gap-2 items-center">
+          <p className="text-sm text-gray-500 w-full md:w-auto">
+            Select an invoice layout:
+          </p>
           {TEMPLATES.map((t) => (
             <button
               key={t.id}
@@ -76,16 +77,17 @@ export default function PreviewInvoice() {
           ))}
         </div>
 
-        {/* Export PDF button right */}
-
-        <Button onClick={handleExport} loading={isPrinting} variant="contained">
-          {isPrinting ? "Downloading.." : "Download PDF"}
+        <Button
+          onClick={handleExport}
+          variant="contained"
+          disabled={isPrinting}
+        >
+          {isPrinting ? "Downloading..." : "Download PDF"}
         </Button>
       </div>
 
-      {/* Invoice preview with badge */}
-      <div className="flex justify-center relative mt-4">
-        {/* Status badge */}
+      {/* Invoice preview + status badge */}
+      <div className="relative flex justify-center mt-6">
         {invoice.status && (
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
             <span
@@ -104,7 +106,11 @@ export default function PreviewInvoice() {
         )}
 
         <div className="bg-white shadow-2xl rounded-lg w-full overflow-auto">
-          <InvoiceTemplate invoice={invoice} template={template} />
+          <InvoiceTemplate
+            ref={previewRef}
+            invoice={invoice}
+            template={template}
+          />
         </div>
       </div>
     </div>

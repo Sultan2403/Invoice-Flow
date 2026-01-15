@@ -8,7 +8,7 @@ export default function calcDueDate(invoice) {
 
   // Determine due badge
   let dueBadge = {
-    text: `${daysUntilDue <= 0 ? "Overdue" : "Due in daysUntilDue day(s)"}`,
+    text: `${daysUntilDue <= 0 ? "Overdue" : `Due in ${daysUntilDue} day(s)`}`,
     color: "success",
   };
   if (daysUntilDue <= 3) dueBadge.color = "error";

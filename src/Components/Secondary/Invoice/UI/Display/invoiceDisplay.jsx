@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Chip } from "@mui/material";
-import { CircleAlert } from "lucide-react";
+import { CheckCircle2Icon, CircleAlert } from "lucide-react";
 
 import calcDueDate from "../../Helpers/Calculations/calcDueDate";
 import { getInvoices } from "../../Helpers/Storage/getInvoices";
@@ -11,29 +11,47 @@ import { useState } from "react";
 import FormModal from "../../../Reciepts/UI/Helpers/formModal";
 import BasicModal from "../../../../UI/Modal/modal";
 import getReceipts from "../../../Reciepts/Helpers/Storage/getReceipts";
+import updateInvoice from "../../Helpers/Storage/updateInvoice";
 
 export default function DisplayInvoice() {
   const [formMode, setFormMode] = useState(false);
   const [receiptGenerated, setReceiptGenerated] = useState(false);
-
+  const [feedback, setFeedback] = useState(false);
   const invoice = useInvoiceId(getInvoices());
+
+  const receipts = getReceipts();
+  const existingReceipt = receipts.find((r) => r.invoiceId === invoice.id);
+  const paidAt = existingReceipt?.createdAt; // ISO string
+
   const customer = invoice.customer || {};
   const hasItemTaxes = invoice.items.some((item) => item.tax > 0);
   const dateData = calcDueDate(invoice);
-
-  const receipts = getReceipts();
-  const existingReceipt = receipts.find(
-    (receipt) => receipt.invoiceId === invoice.id
-  );
-
-  const canGenerateReceipt = existingReceipt && invoice.status === "Draft";
 
   useEffect(() => {
     document.title = `Invoice-${invoice.no || invoice.name}`;
   }, [invoice]);
 
+  const sendInvToCustomer = () => {
+    const updatedInv = { ...invoice, status: "Sent" };
+    updateInvoice(updatedInv);
+    setFeedback(true);
+  };
+
   return (
     <div className="max-w-[800px] mx-auto p-6 bg-gray-50 rounded shadow-md space-y-6">
+      {/* Modals */}
+      {/*  */}
+
+      <BasicModal open={feedback} onClose={() => setFeedback(false)}>
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Invoice Sent</h2>
+          <p>
+            The invoice, {invoice.name} has been sent to the customer
+            successfully.
+          </p>
+        </div>
+      </BasicModal>
+
       <BasicModal
         open={receiptGenerated}
         onClose={() => setReceiptGenerated(false)}
@@ -43,8 +61,8 @@ export default function DisplayInvoice() {
             Receipt Generated!
           </h2>
           <p className="text-gray-600">
-            The invoice <strong>{invoice.invoice_name}</strong> has been marked
-            as paid. You can now view the receipt.
+            The invoice <strong>{invoice.name}</strong> has been marked as paid.
+            You can now view the receipt.
           </p>
           <div className="flex justify-end gap-2">
             <Button
@@ -82,31 +100,43 @@ export default function DisplayInvoice() {
       />
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold text-gray-800">
-          {invoice.invoice_name}
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-800">{invoice.name}</h1>
         <p className="text-gray-600">
-          Invoice No:{" "}
-          <span className="font-semibold">{invoice.invoice_no}</span>
+          Invoice No: <span className="font-semibold">{invoice.no}</span>
         </p>
         <div className="flex justify-center items-center gap-2">
           <Chip
-            label={invoice.status}
+            sx={{ fontSize: "14px", fontWeight: 500 }}
+            label={
+              existingReceipt
+                ? `Paid at ${new Date(paidAt).toLocaleDateString()}`
+                : invoice.status
+            }
             color={
-              invoice.status === "Draft"
-                ? "warning"
-                : invoice.status === "Paid"
+              existingReceipt ||
+              invoice.status === "Sent" ||
+              invoice.status === "Paid"
                 ? "success"
+                : invoice.status === "Draft"
+                ? "warning"
                 : "default"
             }
             variant="filled"
           />
-          <Chip
-            icon={<CircleAlert />}
-            label={dateData.dueBadge.text}
-            color={dateData.dueBadge.color}
-            variant="outlined"
-          />
+          {invoice.status !== "Paid" && (
+            <Chip
+              icon={
+                dateData.daysUntilDue > 3 ? (
+                  <CheckCircle2Icon />
+                ) : (
+                  <CircleAlert />
+                )
+              }
+              label={dateData.dueBadge.text}
+              color={dateData.dueBadge.color}
+              variant="outlined"
+            />
+          )}
         </div>
       </div>
 
@@ -172,6 +202,11 @@ export default function DisplayInvoice() {
           <p className="text-xl font-bold">
             Total: ${invoice.total.toFixed(2)}
           </p>
+          {existingReceipt && (
+            <p className="text-sm text-gray-500">
+              Paid At: {new Date(paidAt).toLocaleString()}
+            </p>
+          )}
         </div>
       </div>
 
@@ -179,33 +214,21 @@ export default function DisplayInvoice() {
       <div className="mt-6 w-full flex justify-between">
         {/* Left side */}
         <div className="flex gap-2">
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#3b82f6", // light blue primary
-              color: "#fff",
-              px: 3, // horizontal padding
-              py: 1, // vertical padding
-              // textTransform: "none", // keep text normal
-              fontSize: 14,
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#3b82f6", // light blue primary
-              color: "#fff",
-              px: 3, // horizontal padding
-              py: 1, // vertical padding
-              // textTransform: "none", // keep text normal
-              fontSize: 14,
-            }}
-          >
-            Send to Customer
-          </Button>
+          {/* <Button variant="contained">Edit</Button> */}
+
+          {invoice.status === "Draft" && (
+            <Button variant="contained" onClick={() => sendInvToCustomer()}>
+              Send to Customer
+            </Button>
+          )}
+
+          {invoice.status === "Sent" && (
+            <Button variant="contained" onClick={() => setFormMode(true)}>
+              Mark as Paid
+            </Button>
+          )}
         </div>
+
         <div className="flex gap-2">
           {/* View as PDF - secondary */}
           <NavLink to={`/invoices/view/${invoice.id}/pdf-preview`}>
@@ -220,43 +243,9 @@ export default function DisplayInvoice() {
                 // textTransform: "none",
               }}
             >
-              View as PDF
+              PDF Preview
             </Button>
           </NavLink>
-
-          {/* Conditional: View Receipt or Mark as Paid */}
-          {existingReceipt ? (
-            <NavLink to={`/receipts/view/${existingReceipt.id}`}>
-              <Button
-                variant="outlined"
-                sx={{
-                  borderColor: "#3b82f6",
-                  color: "#3b82f6",
-                  px: 3,
-                  py: 1,
-                  fontSize: 14,
-                  // textTransform: "none",
-                }}
-              >
-                View Receipt
-              </Button>
-            </NavLink>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={() => setFormMode(true)}
-              sx={{
-                backgroundColor: "#2563eb", // solid blue → primary
-                color: "#fff",
-                px: 3,
-                py: 1,
-                fontSize: 14,
-                // textTransform: "none",
-              }}
-            >
-              Mark as Paid
-            </Button>
-          )}
         </div>
       </div>
     </div>

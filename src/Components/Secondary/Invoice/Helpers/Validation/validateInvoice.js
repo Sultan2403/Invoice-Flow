@@ -11,22 +11,28 @@ export function validateInvoice(invoice) {
       "Invoice name can include letters, numbers, spaces, '.', '-', '_' only (max 50 chars)";
   }
 
-  // --- Customer Name ---
-  const customerNameRegex = /^[a-zA-Z0-9\s.'-]{1,50}$/;
-  if (!invoice.customer.name?.trim() || !invoice.customer.name) {
-    errors.customer = {};
+  // Ensure invoice.customer exists first
+  if (!invoice.customer || !invoice.customer.name?.trim()) {
+    errors.customer = errors.customer || {};
     errors.customer.name = "Customer name is required";
-  } else if (!customerNameRegex.test(invoice.customer.name.trim())) {
-    errors.customer = {};
-    errors.customer.name =
-      "Customer name can include letters, numbers, spaces, apostrophe, period, hyphen (max 50 chars)";
+  } else {
+    const customerNameRegex = /^[a-zA-Z0-9\s.'-]{1,50}$/;
+    if (!customerNameRegex.test(invoice.customer.name.trim())) {
+      errors.customer = errors.customer || {};
+      errors.customer.name =
+        "Customer name can include letters, numbers, spaces, apostrophe, period, hyphen (max 50 chars)";
+    }
   }
 
-  // --- Customer Email (optional) ---
-  if (invoice.customer.email?.trim()) {
+  // Email validation
+  if (!invoice.customer || !invoice.customer.email?.trim()) {
+    errors.customer = errors.customer || {};
+    errors.customer.email =
+      "Email is required for an invoice. Use POS mode for walk-in payments.";
+  } else {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(invoice.customer.email.trim())) {
-      errors.customer = {};
+      errors.customer = errors.customer || {};
       errors.customer.email = "Invalid email format";
     }
   }

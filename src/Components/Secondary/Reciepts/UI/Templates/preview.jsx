@@ -2,9 +2,13 @@ import ReceiptTemplate from "./receiptTemplate";
 import exportPdf from "../../../../../Utils/exportpdf";
 import getReceipts from "../../Helpers/Storage/getReceipts";
 import useReceiptId from "../../Hooks/useReceipt";
-import getSavedReceiptTemplate from "../../Helpers/Storage/getSavedReceiptTemplate";
+import {
+  getSavedReceiptTemplate,
+  saveReceiptTemplate,
+} from "../../Helpers/Storage/templates.helpers";
 import Button from "@mui/material/Button";
 import { useState } from "react";
+import { useRef } from "react";
 
 export default function PreviewReceipt() {
   const receipt = useReceiptId(getReceipts());
@@ -20,13 +24,19 @@ export default function PreviewReceipt() {
   }
 
   document.title = `Receipt ${receipt.no}`;
-  const element = document.getElementById("receipt-preview");
+  const previewRef = useRef(null);
+
+  const TEMPLATES = [
+    { id: "classic", label: "Classic" },
+    { id: "modern", label: "Modern" },
+    { id: "compact", label: "Compact" },
+  ];
 
   const handleExport = () => {
     setIsPrinting(true);
     exportPdf({
-      receipt,
-      element,
+      data: receipt,
+      element: previewRef.current,
       onComplete: () => setIsPrinting(false),
     });
   };
@@ -36,23 +46,53 @@ export default function PreviewReceipt() {
       <h1 className="text-2xl font-bold text-gray-800 text-center">
         Receipt Preview
       </h1>
-
       <p className="text-center text-gray-600">
         Receipt #{receipt.no} · Paid via {receipt.paymentMethod}
-      </p>
+      </p>{" "}
+      {/* Template switcher */}
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-gray-500">
+          Select a receipt layout before exporting or sending.
+        </p>
 
-      {/* Controls */}
-      <div className="flex justify-between items-center">
-        <Button variant="contained" loading={isPrinting} onClick={handleExport}>
-          Download PDF
-        </Button>
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  setTemplate(t.id);
+                  saveReceiptTemplate(t.id);
+                }}
+                className={`px-3 py-1.5 rounded text-sm border transition
+            ${
+              template === t.id
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="contained"
+            loading={isPrinting}
+            onClick={handleExport}
+          >
+            Download PDF
+          </Button>
+        </div>
       </div>
-
       {/* Preview */}
       <div className="bg-white shadow-2xl rounded-lg overflow-auto">
-        <ReceiptTemplate receipt={receipt} template={template} />
+        <ReceiptTemplate
+          ref={previewRef}
+          receipt={receipt}
+          template={template}
+        />
       </div>
-
       {/* Footer actions */}
       <div className="flex justify-between">
         <Button variant="outlined">Back to Invoice</Button>

@@ -32,9 +32,13 @@ export default function FormModal({ open, invoice, onSubmit }) {
 
     const receipt = generateReceipt({ invoice, paymentMethod });
     saveReceipt(receipt);
-    invoice.receipt = receipt;
+    const updatedInvoice = {
+      ...invoice,
+      receiptId: receipt.id,
+      status: "Paid",
+    };
 
-    updateInvoice(invoice);
+    updateInvoice(updatedInvoice);
     onSubmit();
     handleClose();
   };

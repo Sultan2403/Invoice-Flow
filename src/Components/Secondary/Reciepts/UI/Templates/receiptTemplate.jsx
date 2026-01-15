@@ -1,7 +1,7 @@
 import getReceipts from "../../Helpers/Storage/getReceipts";
 import useReceiptId from "../../Hooks/useReceipt";
 
-export default function ReceiptTemplate({ template }) {
+export default function ReceiptTemplate({ template, ref }) {
   const receipt = useReceiptId(getReceipts());
 
   if (!receipt) {
@@ -19,6 +19,15 @@ export default function ReceiptTemplate({ template }) {
         "bg-gray-100 text-left font-semibold text-sm uppercase tracking-wide",
       rowAlt: "bg-gray-50",
       box: "shadow p-4 rounded text-sm space-y-1",
+    },
+    modern: {
+      container: "p-8 text-base leading-relaxed bg-gray-50",
+      title: "text-3xl font-extrabold mb-2 uppercase tracking-wider",
+      subtitle: "text-gray-700 italic",
+      tableHead:
+        "bg-gray-200 text-left font-semibold text-sm uppercase tracking-wide",
+      rowAlt: "bg-gray-100",
+      box: "shadow-md p-5 rounded text-sm space-y-2",
     },
 
     compact: {
@@ -38,12 +47,13 @@ export default function ReceiptTemplate({ template }) {
   return (
     <div
       id="receipt-preview"
+      ref={ref}
       className={`mx-auto w-[794px] bg-white text-gray-800 ${styles.container} printable`}
     >
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className={styles.title}>Payment Receipt</h1>
-        <p className={styles.subtitle}>Receipt #{receipt.id}</p>
+        <p className={styles.subtitle}>Receipt #{receipt.no}</p>
         <p className="mt-1 text-sm">
           {new Date(receipt.createdAt).toLocaleDateString()}
         </p>

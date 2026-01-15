@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-const exportPdf = async ({ invoice, element, onComplete }) => {
+const exportPdf = async ({ data, element, onComplete }) => {
   const canvas = await html2canvas(element, { scale: 2 });
   const imgData = canvas.toDataURL("image/png");
 
@@ -23,7 +23,7 @@ const exportPdf = async ({ invoice, element, onComplete }) => {
     }
   }
 
-  pdf.save(`${invoice.name}.pdf`);
+  pdf.save(`${data?.name || data.no}.pdf`);
   onComplete();
 };
 

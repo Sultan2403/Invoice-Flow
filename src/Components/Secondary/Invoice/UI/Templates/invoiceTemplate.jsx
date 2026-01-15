@@ -1,4 +1,4 @@
-export default function InvoiceTemplate({ invoice, template }) {
+export default function InvoiceTemplate({ invoice, template, ref }) {
   if (!invoice) {
     return (
       <div className="p-8 text-center text-gray-600">Invoice not found</div>
@@ -50,6 +50,7 @@ export default function InvoiceTemplate({ invoice, template }) {
   return (
     <div
       id="invoice-preview"
+      ref={ref}
       className={`relative mx-auto w-[794px] bg-white font-sans text-gray-800 ${styles.container} printable`}
     >
       {/* Header */}
