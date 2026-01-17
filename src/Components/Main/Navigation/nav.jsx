@@ -132,6 +132,26 @@ export default function Nav() {
           </li>
           <li>
             <NavLink
+              to="inventory/create"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <PlusIcon />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Inventory</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
               to="receipts"
               role="menuitem"
               className={({ isActive }) =>
