@@ -132,7 +132,7 @@ export default function Nav() {
           </li>
           <li>
             <NavLink
-              to="inventory/create"
+              to="inventory"
               role="menuitem"
               className={({ isActive }) =>
                 isActive

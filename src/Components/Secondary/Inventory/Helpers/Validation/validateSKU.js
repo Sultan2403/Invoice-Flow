@@ -1,4 +1,4 @@
-import { getInventory } from "../Storage/inventory";
+import { getInventoryItems } from "../Storage/inventory";
 
 export function validateSKU(sku) {
   if (!sku) return null; // optional
@@ -15,7 +15,7 @@ export function validateSKU(sku) {
 
 export function validateSKUUnique(sku) {
   if (!sku) return null; // optional
-  const inventory = getInventory();
+  const inventory = getInventoryItems();
   const exists = inventory.some((item) => item.sku === sku);
   if (exists) return "SKU must be unique";
   return null;

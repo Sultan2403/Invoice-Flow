@@ -27,7 +27,8 @@ export default function validateInventoryItem(item) {
       "Low stock threshold must be a number greater than 0";
   }
 
-  errors.sku = validateSKU(item.sku) || validateSKUUnique(item.sku);
+  const skuErrs = validateSKU(item.sku) || validateSKUUnique(item.sku);
+  skuErrs ? (errors.sku = skuErrs) : null;
 
   return errors;
 }

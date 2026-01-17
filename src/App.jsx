@@ -13,6 +13,7 @@ import Edit_Invoice from "./Components/Secondary/Invoice/UI/Editing/editInvoice"
 import Receipts from "./Components/Secondary/Reciepts/UI/Display/receipts";
 import Receipt_Preview from "./Components/Secondary/Reciepts/UI/Templates/preview";
 import InventoryForm from "./Components/Secondary/Inventory/UI/inventoryForm";
+import InventoryDisplay from "./Components/Secondary/Inventory/UI/inventoryDisplay";
 
 function App() {
   return (
@@ -33,10 +34,7 @@ function App() {
             path="receipts/view/:receiptId"
             element={<Receipt_Preview />}
           />
-          <Route
-            path="inventory/create"
-            element={<InventoryForm open={true} />}
-          />
+          <Route path="inventory" element={<InventoryDisplay />} />
         </Route>
       </Routes>
     </BrowserRouter>
