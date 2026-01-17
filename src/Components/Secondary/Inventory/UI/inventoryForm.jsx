@@ -16,6 +16,7 @@ export default function InventoryForm({ open, onSubmit }) {
     quantity: "",
     lowStockThreshold: "",
     category: "",
+    imageUrl: "",
   });
 
   useEffect(() => {
@@ -42,7 +43,11 @@ export default function InventoryForm({ open, onSubmit }) {
   };
 
   return (
-    <BasicModal open={isOpen} onClose={() => {}}>
+    <BasicModal
+      open={isOpen}
+      onClose={() => {}}
+      sx={{ width: "min(95vw, 700px)" }}
+    >
       <div className="flex justify-end mb-2">
         <IconButton onClick={handleClose} size="small">
           <X size={20} />
@@ -51,74 +56,92 @@ export default function InventoryForm({ open, onSubmit }) {
 
       <h2 className="text-lg font-semibold mb-4">Add New Inventory Item</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Name + Description */}
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        {/* Name + Category */}
         <div className="flex gap-4">
           <TextField
-            label="Name"
+            label="Name *"
             name="name"
             value={inventoryItem.name}
             onChange={handleChange}
             error={errors.name}
+            helperText={errors.name}
             fullWidth
           />
           <TextField
-            label="Description"
-            name="description"
-            value={inventoryItem.description}
+            label="Category"
+            name="category"
+            value={inventoryItem.category}
             onChange={handleChange}
             fullWidth
           />
         </div>
 
+        {/* Description */}
+        <TextField
+          label="Description"
+          name="description"
+          value={inventoryItem.description}
+          onChange={handleChange}
+          multiline
+          rows={3}
+          fullWidth
+        />
+
         {/* Price + Quantity */}
         <div className="flex gap-4">
           <TextField
-            label="Price"
+            label="Price *"
             name="price"
             type="number"
             value={inventoryItem.price}
             onChange={handleChange}
             error={errors.price}
+            helperText={errors.price}
             fullWidth
           />
           <TextField
-            label="Quantity"
+            label="Quantity *"
             name="quantity"
             type="number"
             value={inventoryItem.quantity}
             onChange={handleChange}
             error={errors.quantity}
+            helperText={errors.quantity}
             fullWidth
           />
         </div>
 
-        {/* SKU */}
-        <TextField
-          label="SKU"
-          name="sku"
-          error={errors.sku}
-          helperText={errors.sku}
-          value={inventoryItem.sku}
-          onChange={handleChange}
-        />
-
-        {/* Low Stock Threshold */}
-        <TextField
-          label="Low Stock Threshold"
-          name="lowStockThreshold"
-          type="number"
-          value={inventoryItem.lowStockThreshold}
-          onChange={handleChange}
-        />
-
-        {/* Category */}
-        <TextField
-          label="Category"
-          name="category"
-          value={inventoryItem.category}
-          onChange={handleChange}
-        />
+        <div className="flex gap-4">
+          <TextField
+            label="SKU"
+            name="sku"
+            value={inventoryItem.sku}
+            onChange={handleChange}
+            error={errors.sku}
+            helperText={errors.sku || "Optional: alphanumeric and unique"}
+            fullWidth
+          />
+          <TextField
+            label="Image URL"
+            name="imageUrl"
+            value={inventoryItem.imageUrl}
+            onChange={handleChange}
+            helperText="Optional: paste a hosted image URL"
+            fullWidth
+          />
+          <TextField
+            label="Low Stock"
+            name="lowStockThreshold"
+            type="number"
+            value={inventoryItem.lowStockThreshold}
+            onChange={handleChange}
+            helperText={
+              errors.lowStockThreshold || "Optional: triggers low stock alerts"
+            }
+            fullWidth
+          />
+        </div>
 
         <div className="flex justify-end gap-3 mt-2">
           <Button variant="outlined" onClick={handleClose}>

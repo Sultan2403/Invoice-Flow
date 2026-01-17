@@ -8,11 +8,16 @@ export default function validateInventoryItem(item) {
     errors.name = "Name is required";
   }
 
-  if (!item.price || isNaN(item.price)) {
+  if (!item.price) errors.price = "Item price is required";
+  else if (isNaN(item.price)) {
     errors.price = "Price must be a number greater than 0";
   }
 
-  if (!item.quantity || isNaN(item.quantity)) {
+  if (!item.quantity) {
+    errors.quantity = "Quantity is required";
+  }
+
+  if (isNaN(item.quantity)) {
     errors.quantity = "Quantity must be a number greater than 0";
   }
 
