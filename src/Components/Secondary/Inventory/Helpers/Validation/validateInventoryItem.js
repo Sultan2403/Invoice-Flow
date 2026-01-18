@@ -1,6 +1,6 @@
 import { validateSKU, validateSKUUnique } from "./validateSKU";
 
-export default function validateInventoryItem(item) {
+export default function validateInventoryItem(item, isEdit) {
   const errors = {};
 
   // Required fields
@@ -13,23 +13,28 @@ export default function validateInventoryItem(item) {
     errors.price = "Price must be a number greater than 0";
   } else if (item.price <= 0) errors.price = "Price must be greater than 0";
 
-  if (!item.currentStock) {
-    errors.currentStock = "Quantity is required";
+  if (!isEdit) {
+    if (!item.currentStock) {
+      errors.currentStock = "Quantity is required";
+    }
+    if (isNaN(item.currentStock)) {
+      errors.currentStock = "Quantity must be a number greater than 0";
+    } else if (item.currentStock <= 0)
+      errors.currentStock = "Quantity must be greater than 0";
   }
-
-  if (isNaN(item.currentStock)) {
-    errors.currentStock = "Quantity must be a number greater than 0";
-  } else if (item.currentStock <= 0)
-    errors.currentStock = "Quantity must be greater than 0";
 
   // Optional fields: validate numbers if provided
   if (item.lowStockThreshold && isNaN(item.lowStockThreshold)) {
     errors.lowStockThreshold =
       "Low stock threshold must be a number greater than 0";
+  } else if (item.lowStockThreshold <= 0) {
+    errors.lowStockThreshold = "Low stock threshold must be greater than 0";
   }
 
-  const skuErrs = validateSKU(item.sku) || validateSKUUnique(item.sku);
-  skuErrs ? (errors.sku = skuErrs) : null;
+  if (!isEdit) {
+    const skuErrs = validateSKU(item.sku) || validateSKUUnique(item.sku);
+    skuErrs ? (errors.sku = skuErrs) : null;
+  }
 
   return errors;
 }

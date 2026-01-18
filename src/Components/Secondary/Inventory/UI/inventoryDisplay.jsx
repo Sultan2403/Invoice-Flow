@@ -13,12 +13,15 @@ import {
   sortInventoryByQuantity,
 } from "../Helpers/Sorting/sortInventory";
 import { MenuItem, TextField } from "@mui/material";
+import searchInventory from "../Helpers/Search/searchInventory";
+import getInventoryItemById from "../Helpers/Search/findItemById";
 
 export default function InventoryDisplay() {
   const [formOpen, setFormOpen] = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [searchBy, setSearchBy] = useState("name");
 
   const inventory = useMemo(
     () => getInventoryItems(),
@@ -27,28 +30,36 @@ export default function InventoryDisplay() {
 
   const handleCloseFeedback = () => setFeedback(false);
   const [sortOrder, setSortOrder] = useState("name-asc");
-  const [filteredInventory, setFilteredInventory] = useState(
-    sortInventoryByName(inventory, sortOrder),
-  );
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const sortedInventory = (() => {
+  const searchResults = useMemo(() => {
+    return searchInventory({
+      inventory,
+      searchTerm,
+      searchBy,
+    });
+  }, [searchTerm, inventory, searchBy]);
+
+  const sortedInventory = useMemo(() => {
     switch (sortOrder) {
       case "name-asc":
-        return sortInventoryByName(inventory, "asc");
+        return sortInventoryByName(searchResults, "asc");
       case "name-desc":
-        return sortInventoryByName(inventory, "desc");
+        return sortInventoryByName(searchResults, "desc");
       case "price-asc":
-        return sortInventoryByPrice(inventory, "asc");
+        return sortInventoryByPrice(searchResults, "asc");
       case "price-desc":
-        return sortInventoryByPrice(inventory, "desc");
+        return sortInventoryByPrice(searchResults, "desc");
       case "qty-asc":
-        return sortInventoryByQuantity(inventory, "asc");
+        return sortInventoryByQuantity(searchResults, "asc");
       case "qty-desc":
-        return sortInventoryByQuantity(inventory, "desc");
+        return sortInventoryByQuantity(searchResults, "desc");
       default:
-        return inventory;
+        return searchResults;
     }
-  })();
+  }, [searchResults, sortOrder]);
+
+  const finalInventory = sortedInventory;
 
   useEffect(() => {
     setTimeout(() => {
@@ -79,25 +90,56 @@ export default function InventoryDisplay() {
         <MenuItem value="qty-desc">Quantity: High → Low</MenuItem>
       </TextField>
 
-      {inventory && inventory.length > 0 ? (
-        sortedInventory.map((item, idx) => (
-          <InventoryCard
-            key={idx}
-            onEdit={(item) => {
-              setEditItem(item);
-              setFormOpen(true);
-            }}
-            onDelete={(item) => {
-              setItemToDelete(item);
-            }}
-            item={item}
-          />
-        ))
-      ) : (
+      <div className="flex gap-4">
+        <TextField
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          label="Search Inventory"
+          className="ml-2"
+          size="small"
+          fullWidth
+        />
+        <TextField
+          select
+          fullWidth
+          label="Search By"
+          className="ml-2"
+          size="small"
+          value={searchBy}
+          onChange={(e) => setSearchBy(e.target.value)}
+        >
+          <MenuItem value="name">Name</MenuItem>
+          <MenuItem value="category">Category</MenuItem>
+          <MenuItem value="sku">SKU</MenuItem>
+          <MenuItem value="price">Price</MenuItem>
+          <MenuItem value="currentStock">Quantity / Stock</MenuItem>
+        </TextField>
+      </div>
+      {/* Inventory List */}
+      {inventory.length === 0 ? (
         <p className="text-gray-500 text-center py-10">
           No items in inventory.
         </p>
+      ) : finalInventory.length === 0 ? (
+        <p className="text-gray-500 text-center py-10">
+          No items match your search.
+        </p>
+      ) : (
+        finalInventory.map((item, idx) => (
+          <InventoryCard
+            key={idx}
+            item={item}
+            onEdit={(item) => {
+              setEditItem(getInventoryItemById(item.id));
+              setFormOpen(true);
+            }}
+            onDelete={(item) => {
+              setItemToDelete(getInventoryItemById(item.id));
+            }}
+          />
+        ))
       )}
+
       <div className="flex justify-end">
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -116,7 +158,10 @@ export default function InventoryDisplay() {
           setEditItem(null);
           setFormOpen(false);
         }}
-        onClose={() => setFormOpen(false)}
+        onClose={() => {
+          setFormOpen(false);
+          setEditItem(null);
+        }}
       />
 
       {/* Delete Confirmation */}

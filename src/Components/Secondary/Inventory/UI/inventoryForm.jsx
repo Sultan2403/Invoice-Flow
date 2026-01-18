@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, TextField, IconButton } from "@mui/material";
+import { Button, TextField, IconButton, MenuItem } from "@mui/material";
 import BasicModal from "../../../UI/Modal/modal";
 import { X } from "lucide-react";
 import validateInventoryItem from "../Helpers/Validation/validateInventoryItem";
@@ -11,6 +11,18 @@ import { findSimilarInventoryItem } from "../Helpers/Search/findSimilarProducts"
 import validateAdjustmentReason from "../Helpers/Validation/validateAdjustmentReason";
 
 export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
+  const categories = [
+    "Electronics",
+    "Apparel",
+    "Home Goods",
+    "Books",
+    "Toys",
+    "Sports Equipment",
+    "Beauty Products",
+    "Automotive Parts",
+    "Groceries",
+    "Furniture",
+  ];
   const defaultObj = {
     name: "",
     sku: "",
@@ -33,8 +45,10 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
   const [errors, setErrors] = useState({});
   const [quantityChanged, setQuantityChanged] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
-  const [unsaved, setUnsaved] = useState(false);
+
   const [inventoryItem, setInventoryItem] = useState(defaultObj);
+  const [unsavedChanges, setChanges] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if (itemToEdit)
@@ -45,6 +59,14 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
       });
   }, [itemToEdit]);
 
+  function handleModalChange() {
+    if (unsavedChanges) {
+      setModalOpen(true);
+    } else {
+      handleClose();
+    }
+  }
+
   const handleClose = () => {
     onClose();
     setInventoryItem(defaultObj);
@@ -54,6 +76,13 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    setChanges(true);
+    if (name === "stockAdjustment") {
+      const originalQuantity = itemToEdit?.currentStock || 0;
+      const newQuantity = parseFloat(value) || 0;
+      setQuantityChanged(newQuantity !== originalQuantity);
+    }
     if (
       name === "price" ||
       name === "lowStockThreshold" ||
@@ -63,11 +92,6 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
       const numberval = parseFloat(value);
       setInventoryItem((prev) => ({ ...prev, [name]: numberval }));
       return;
-    }
-    if (name === "currentStock") {
-      const originalQuantity = itemToEdit?.currentStock || 0;
-      const newQuantity = parseFloat(value) || 0;
-      setQuantityChanged(newQuantity !== originalQuantity);
     }
 
     setInventoryItem((prev) => ({ ...prev, [name]: value }));
@@ -85,22 +109,36 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
 
     handleClose();
   };
+  const previousStock = itemToEdit?.currentStock || inventoryItem.currentStock;
+  const adjustment = inventoryItem.stockAdjustment || 0;
+
+  const finalStock = itemToEdit
+    ? previousStock + adjustment
+    : inventoryItem.currentStock;
+
+  const realInvItem = {
+    ...inventoryItem,
+    currentStock: finalStock,
+    id: itemToEdit?.id || crypto.randomUUID(),
+    reserved: itemToEdit?.reserved || 0,
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const realInvItem = {
-      ...inventoryItem,
-      id: itemToEdit?.id || crypto.randomUUID(),
-      reserved: itemToEdit?.reserved || 0,
-    };
+
     const validation = {
-      ...validateInventoryItem(realInvItem),
+      ...validateInventoryItem(realInvItem, itemToEdit),
       ...validateAdjustmentReason({
         adjustmentReason: realInvItem.adjustmentReason,
         quantityChanged,
         initialQuantity: itemToEdit ? itemToEdit.currentStock : 0,
-        newQuantity: realInvItem.currentStock,
+        newQuantity:
+          (itemToEdit?.currentStock || 0) +
+          (inventoryItem.stockAdjustment || 0),
+        lowStockThreshold: realInvItem.lowStockThreshold,
       }),
     };
+    console.log(validation);
 
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
@@ -110,12 +148,15 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
       const delta = {
         timestamp: new Date().toISOString(), // or just new Date() if you prefer
         previousQuantity: itemToEdit?.currentStock || 0,
-        newQuantity: inventoryItem.stockAdjustment,
+        newQuantity:
+          inventoryItem.stockAdjustment + itemToEdit?.currentStock || 0,
         reason: inventoryItem.adjustmentReason,
       };
-      realInvItem.currentStock =
-        itemToEdit?.currentStock + inventoryItem?.stockAdjustment;
-      realInvItem.stockHistory = [...realInvItem.stockHistory, delta];
+      console.log(realInvItem, realInvItem.stockHistory);
+
+      realInvItem?.stockHistory
+        ? (realInvItem.stockHistory = [...realInvItem.stockHistory, delta])
+        : (realInvItem.stockHistory = [delta]);
     }
 
     const similarItem = findSimilarInventoryItem(realInvItem);
@@ -129,22 +170,23 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
 
   return (
     <>
-      <BasicModal open={unsaved}>
+      <BasicModal open={modalOpen}>
         <div className="flex flex-col gap-4 p-6">
           <h3 className="text-lg font-semibold">Unsaved Changes</h3>
           <p className="text-sm text-gray-600">
-            You have unsaved changes. Are you sure you want to leave? You’ll
-            lose your edits.
+            You have unsaved unsavedChanges. Are you sure you want to leave?
+            You’ll lose your edits.
           </p>
           <div className="flex justify-end gap-3 mt-2">
-            <Button variant="outlined" onClick={() => setUnsaved(false)}>
+            <Button variant="outlined" onClick={() => setChanges(false)}>
               Cancel
             </Button>
             <Button
               variant="contained"
               color="primary"
               onClick={() => {
-                setUnsaved(false);
+                setChanges(false);
+                setModalOpen(false);
                 handleClose();
               }}
             >
@@ -172,7 +214,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
               color="primary"
               onClick={() => {
                 setConfirmation(false);
-                finalizeSave(finalizeInventoryItem(inventoryItem)); // extracted save logic
+                finalizeSave(realInvItem); // extracted save logic
               }}
             >
               Save anyway
@@ -186,7 +228,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
         sx={{ width: "min(95vw, 700px)" }}
       >
         <div className="flex justify-end mb-2">
-          <IconButton onClick={handleClose} size="small">
+          <IconButton onClick={handleModalChange} size="small">
             <X size={20} />
           </IconButton>
         </div>
@@ -210,12 +252,19 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
               fullWidth
             />
             <TextField
-              label="Category"
+              label="Category (optional)"
               name="category"
               value={inventoryItem.category}
               onChange={handleChange}
               fullWidth
-            />
+              select
+            >
+              {categories.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
+            </TextField>
           </div>
 
           {/* Description */}
@@ -261,6 +310,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
               }
               fullWidth
             />
+
             {quantityChanged && (
               <TextField
                 label="Adjustment Reason"
@@ -272,13 +322,13 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
                 helperText={errors.adjustmentReason}
                 fullWidth
               >
-                <option value="" disabled>
+                <MenuItem value="" disabled>
                   -- Select Reason --
-                </option>
+                </MenuItem>
                 {adjustmentReasons.map((reason) => (
-                  <option key={reason} value={reason}>
+                  <MenuItem key={reason} value={reason}>
                     {reason}
-                  </option>
+                  </MenuItem>
                 ))}
               </TextField>
             )}
@@ -318,10 +368,15 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
           </div>
 
           <div className="flex justify-end gap-3 mt-2">
-            <Button variant="outlined" onClick={() => setUnsaved(true)}>
+            <Button variant="outlined" onClick={() => handleModalChange()}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              disabled={!unsavedChanges}
+              type="submit"
+              variant="contained"
+              color="primary"
+            >
               {itemToEdit ? "Save Edits" : " Add Item"}
             </Button>
           </div>

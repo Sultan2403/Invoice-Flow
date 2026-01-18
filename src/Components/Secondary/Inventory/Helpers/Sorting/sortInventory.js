@@ -1,4 +1,5 @@
 export function sortInventoryByName(inventory, sortOrder) {
+  if (inventory.length === 0) return inventory;
   return inventory.sort((a, b) => {
     const nameA = a.name.toLowerCase();
     const nameB = b.name.toLowerCase();
@@ -11,6 +12,7 @@ export function sortInventoryByName(inventory, sortOrder) {
 }
 
 export function sortInventoryByPrice(inventory, sortOrder) {
+  if (inventory.length === 0) return inventory;
   return inventory.sort((a, b) => {
     const priceA = a.price;
     const priceB = b.price;
@@ -23,6 +25,7 @@ export function sortInventoryByPrice(inventory, sortOrder) {
 }
 
 export function sortInventoryByQuantity(inventory, sortOrder) {
+  if (inventory.length === 0) return inventory;
   return inventory.sort((a, b) => {
     const quantityA = a.currentStock;
     const quantityB = b.currentStock;

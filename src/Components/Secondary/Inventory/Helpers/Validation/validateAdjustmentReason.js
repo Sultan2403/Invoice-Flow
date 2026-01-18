@@ -36,10 +36,7 @@ export default function validateAdjustmentReason({
         "Low stock threshold cannot be greater than current quantity.",
     };
   }
-  if (
-    quantityChanged &&
-    (initialQuantity || 0) + inventoryItem.stockAdjustment < 0
-  ) {
+  if (quantityChanged && initialQuantity + newQuantity < 0) {
     return {
       stockAdjustment: "Resulting stock cannot be negative",
     };
