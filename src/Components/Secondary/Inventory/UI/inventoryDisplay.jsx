@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import InventoryForm from "./inventoryForm";
 import InventoryCard from "./inventoryCard";
 import BasicModal from "../../../UI/Modal/modal";
@@ -7,6 +7,12 @@ import {
   deleteInventoryItem,
   getInventoryItems,
 } from "../Helpers/Storage/inventory";
+import {
+  sortInventoryByName,
+  sortInventoryByPrice,
+  sortInventoryByQuantity,
+} from "../Helpers/Sorting/sortInventory";
+import { MenuItem, TextField } from "@mui/material";
 
 export default function InventoryDisplay() {
   const [formOpen, setFormOpen] = useState(false);
@@ -14,9 +20,35 @@ export default function InventoryDisplay() {
   const [editItem, setEditItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const inventory = getInventoryItems();
+  const inventory = useMemo(
+    () => getInventoryItems(),
+    [formOpen, itemToDelete, feedback, editItem],
+  );
 
   const handleCloseFeedback = () => setFeedback(false);
+  const [sortOrder, setSortOrder] = useState("name-asc");
+  const [filteredInventory, setFilteredInventory] = useState(
+    sortInventoryByName(inventory, sortOrder),
+  );
+
+  const sortedInventory = (() => {
+    switch (sortOrder) {
+      case "name-asc":
+        return sortInventoryByName(inventory, "asc");
+      case "name-desc":
+        return sortInventoryByName(inventory, "desc");
+      case "price-asc":
+        return sortInventoryByPrice(inventory, "asc");
+      case "price-desc":
+        return sortInventoryByPrice(inventory, "desc");
+      case "qty-asc":
+        return sortInventoryByQuantity(inventory, "asc");
+      case "qty-desc":
+        return sortInventoryByQuantity(inventory, "desc");
+      default:
+        return inventory;
+    }
+  })();
 
   useEffect(() => {
     setTimeout(() => {
@@ -31,8 +63,24 @@ export default function InventoryDisplay() {
       <h1 className="font-bold text-xl">Your Inventory</h1>
 
       {/* Inventory List */}
+      <TextField
+        select
+        value={sortOrder}
+        onChange={(e) => setSortOrder(e.target.value)}
+        className="ml-2"
+        size="small"
+        label="Sort By"
+      >
+        <MenuItem value="name-asc">A-Z</MenuItem>
+        <MenuItem value="name-desc">Z-A</MenuItem>
+        <MenuItem value="price-asc">Price: Low → High</MenuItem>
+        <MenuItem value="price-desc">Price: High → Low</MenuItem>
+        <MenuItem value="qty-asc">Quantity: Low → High</MenuItem>
+        <MenuItem value="qty-desc">Quantity: High → Low</MenuItem>
+      </TextField>
+
       {inventory && inventory.length > 0 ? (
-        inventory.map((item, idx) => (
+        sortedInventory.map((item, idx) => (
           <InventoryCard
             key={idx}
             onEdit={(item) => {
