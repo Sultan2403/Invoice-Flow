@@ -11,15 +11,16 @@ export default function validateInventoryItem(item) {
   if (!item.price) errors.price = "Item price is required";
   else if (isNaN(item.price)) {
     errors.price = "Price must be a number greater than 0";
+  } else if (item.price <= 0) errors.price = "Price must be greater than 0";
+
+  if (!item.currentStock) {
+    errors.currentStock = "Quantity is required";
   }
 
-  if (!item.quantity) {
-    errors.quantity = "Quantity is required";
-  }
-
-  if (isNaN(item.quantity)) {
-    errors.quantity = "Quantity must be a number greater than 0";
-  }
+  if (isNaN(item.currentStock)) {
+    errors.currentStock = "Quantity must be a number greater than 0";
+  } else if (item.currentStock <= 0)
+    errors.currentStock = "Quantity must be greater than 0";
 
   // Optional fields: validate numbers if provided
   if (item.lowStockThreshold && isNaN(item.lowStockThreshold)) {

@@ -30,9 +30,9 @@ export default function InventoryCard({ item, onEdit, onDelete }) {
 
         <div className="flex gap-6 mt-2 text-gray-700">
           <p className="text-sm font-medium">
-            Price: {currencyFormatter.format(item.price)}
+            Unit Price: {currencyFormatter.format(item.price)}
           </p>
-          <p className="text-sm font-medium">Qty: {item.quantity} units</p>
+          <p className="text-sm font-medium">Qty Left: {item.quantity} units</p>
         </div>
       </div>
 

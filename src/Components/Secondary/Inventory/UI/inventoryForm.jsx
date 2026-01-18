@@ -9,6 +9,7 @@ import {
 } from "../Helpers/Storage/inventory";
 import { findSimilarInventoryItem } from "../Helpers/Search/findSimilarProducts";
 import finalizeInventoryItem from "../Helpers/Formatting/finalizeInventoryItem";
+import validateAdjustmentReason from "../Helpers/Validation/validateAdjustmentReason";
 
 export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
   const defaultObj = {
@@ -16,19 +17,33 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
     sku: "",
     description: "",
     price: "",
-    quantity: "",
+    currentStock: "",
     lowStockThreshold: "",
+    adjustmentReason: "",
     category: "",
     imageUrl: "",
   };
 
+  const adjustmentReasons = [
+    "Stock Correction",
+    "New Stock Arrival",
+    "Damaged Goods",
+    "Theft",
+    "Other",
+  ];
   const [errors, setErrors] = useState({});
+  const [quantityChanged, setQuantityChanged] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
   const [unsaved, setUnsaved] = useState(false);
   const [inventoryItem, setInventoryItem] = useState(defaultObj);
 
   useEffect(() => {
-    if (itemToEdit) setInventoryItem(itemToEdit);
+    if (itemToEdit)
+      setInventoryItem({
+        ...itemToEdit,
+        stockAdjustment: 0,
+        adjustmentReason: "",
+      });
     console.log(inventoryItem);
   }, [itemToEdit]);
 
@@ -38,10 +53,28 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
   const handleClose = () => {
     onClose();
     setInventoryItem(defaultObj);
+    setErrors({});
+    setQuantityChanged(false);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (
+      name === "price" ||
+      name === "lowStockThreshold" ||
+      name === "stockAdjustment" ||
+      name === "currentStock"
+    ) {
+      const numberval = parseFloat(value);
+      setInventoryItem((prev) => ({ ...prev, [name]: numberval }));
+      return;
+    }
+    if (name === "currentStock") {
+      const originalQuantity = itemToEdit?.currentStock || 0;
+      const newQuantity = parseFloat(value) || 0;
+      setQuantityChanged(newQuantity !== originalQuantity);
+    }
+
     setInventoryItem((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -59,14 +92,36 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    const realInvItem = finalizeInventoryItem(inventoryItem);
-    const validation = validateInventoryItem(realInvItem);
-    console.log(validation);
+    const realInvItem = {
+      ...inventoryItem,
+      id: itemToEdit?.id || crypto.randomUUID(),
+    };
+    const validation = {
+      ...validateInventoryItem(realInvItem),
+      ...validateAdjustmentReason({
+        adjustmentReason: realInvItem.adjustmentReason,
+        quantityChanged,
+        initialQuantity: itemToEdit ? itemToEdit.currentStock : 0,
+        newQuantity: realInvItem.currentStock,
+      }),
+    };
 
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
       return;
     }
+    if (quantityChanged) {
+      const delta = {
+        timestamp: new Date().toISOString(), // or just new Date() if you prefer
+        previousQuantity: itemToEdit?.currentStock || 0,
+        newQuantity: inventoryItem.stockAdjustment,
+        reason: inventoryItem.adjustmentReason,
+      };
+      realInvItem.currentStock =
+        itemToEdit?.currentStock + inventoryItem?.stockAdjustment;
+      realInvItem.stockHistory = [...realInvItem.stockHistory, delta];
+    }
+
     const similarItem = findSimilarInventoryItem(realInvItem);
 
     if (similarItem && !itemToEdit) {
@@ -191,15 +246,46 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
               fullWidth
             />
             <TextField
-              label="Quantity (units) *"
-              name="quantity"
+              label={
+                itemToEdit
+                  ? "Stock Adjustment (units) use negative values for reductions *"
+                  : "Initial stock (units) *"
+              }
+              name={itemToEdit ? "stockAdjustment" : "currentStock"}
               type="number"
-              value={inventoryItem.quantity}
+              value={
+                itemToEdit
+                  ? inventoryItem.stockAdjustment
+                  : inventoryItem.currentStock
+              }
               onChange={handleChange}
-              error={errors.quantity}
-              helperText={errors.quantity}
+              error={itemToEdit ? errors.stockAdjustment : errors.currentStock}
+              helperText={
+                itemToEdit ? errors.stockAdjustment : errors.currentStock
+              }
               fullWidth
             />
+            {quantityChanged && (
+              <TextField
+                label="Adjustment Reason"
+                name="adjustmentReason"
+                select
+                value={inventoryItem.adjustmentReason}
+                onChange={handleChange}
+                error={errors.adjustmentReason}
+                helperText={errors.adjustmentReason}
+                fullWidth
+              >
+                <option value="" disabled>
+                  -- Select Reason --
+                </option>
+                {adjustmentReasons.map((reason) => (
+                  <option key={reason} value={reason}>
+                    {reason}
+                  </option>
+                ))}
+              </TextField>
+            )}
           </div>
 
           <div className="flex gap-4">
