@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ReceiptText,
+  Boxes,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -145,7 +146,7 @@ export default function Nav() {
               }
             >
               <span className="text-lg" aria-hidden>
-                <PlusIcon />
+                <Boxes />
               </span>
               <span className={`${open ? "" : "hidden"}`}>Inventory</span>
             </NavLink>

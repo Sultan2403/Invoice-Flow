@@ -43,11 +43,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
         stockAdjustment: 0,
         adjustmentReason: "",
       });
-    console.log(inventoryItem);
   }, [itemToEdit]);
-
-  console.log(inventoryItem);
-  console.log("Edit:", inventoryItem);
 
   const handleClose = () => {
     onClose();
@@ -94,6 +90,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
     const realInvItem = {
       ...inventoryItem,
       id: itemToEdit?.id || crypto.randomUUID(),
+      reserved: itemToEdit?.reserved || 0,
     };
     const validation = {
       ...validateInventoryItem(realInvItem),

@@ -53,7 +53,7 @@ export default function InventoryCard({ item, onEdit, onDelete }) {
               isLowStock ? "text-red-600 font-bold" : ""
             }`}
           >
-            Qty Left: {item.quantity} units
+            Qty Left: {item.currentStock} units
           </p>
         </div>
       </div>
