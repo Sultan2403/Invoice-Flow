@@ -8,7 +8,6 @@ import {
   updateInventoryItem,
 } from "../Helpers/Storage/inventory";
 import { findSimilarInventoryItem } from "../Helpers/Search/findSimilarProducts";
-import finalizeInventoryItem from "../Helpers/Formatting/finalizeInventoryItem";
 import validateAdjustmentReason from "../Helpers/Validation/validateAdjustmentReason";
 
 export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
