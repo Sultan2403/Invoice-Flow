@@ -70,7 +70,7 @@ export default function ReceiptCard({ receipt }) {
       {/* Actions */}
       <div className="flex justify-end px-4 py-3 border-t border-gray-100">
         <NavLink
-          to={`receipts/view/${receipt.id}`}
+          to={`/receipts/view/${receipt.id}`}
           className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
         >
           View

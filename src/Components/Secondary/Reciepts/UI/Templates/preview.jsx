@@ -9,13 +9,17 @@ import {
 import Button from "@mui/material/Button";
 import { useState } from "react";
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PreviewReceipt() {
+  const navigate = useNavigate();
   const receipt = useReceiptId(getReceipts());
   const [isPrinting, setIsPrinting] = useState(false);
   const [template, setTemplate] = useState(
-    getSavedReceiptTemplate() || "classic"
+    getSavedReceiptTemplate() || "classic",
   );
+
+  const goBack = () => navigate(-1);
 
   if (!receipt) {
     return (
@@ -95,7 +99,9 @@ export default function PreviewReceipt() {
       </div>
       {/* Footer actions */}
       <div className="flex justify-between">
-        <Button variant="outlined">Back to Invoice</Button>
+        <Button onClick={() => goBack()} variant="outlined">
+          Back
+        </Button>
 
         {receipt.customer?.email && (
           <Button variant="contained">Send to Customer</Button>

@@ -233,7 +233,9 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
           </IconButton>
         </div>
 
-        <h2 className="text-lg font-semibold mb-4">Add New Inventory Item</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          {itemToEdit ? "Edit Inventory Item" : "Add New Inventory Item"}
+        </h2>
 
         <form
           onSubmit={handleSubmit}
