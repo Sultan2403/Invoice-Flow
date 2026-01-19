@@ -14,6 +14,7 @@ import Receipts from "./Components/Secondary/Reciepts/UI/Display/receipts";
 import Receipt_Preview from "./Components/Secondary/Reciepts/UI/Templates/preview";
 import InventoryForm from "./Components/Secondary/Inventory/UI/inventoryForm";
 import InventoryDisplay from "./Components/Secondary/Inventory/UI/inventoryDisplay";
+import Customer_Display from "./Components/Secondary/Customers/UI/customerDisplay";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             element={<Receipt_Preview />}
           />
           <Route path="inventory" element={<InventoryDisplay />} />
+          <Route path="customers" element={<Customer_Display />} />
         </Route>
       </Routes>
     </BrowserRouter>

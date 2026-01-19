@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ReceiptText,
   Boxes,
+  Users2,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -111,7 +112,7 @@ export default function Nav() {
             </NavLink>
           </li>
 
-          <li>
+          {/* <li>
             <NavLink
               to="invoices/create"
               role="menuitem"
@@ -130,7 +131,7 @@ export default function Nav() {
               </span>
               <span className={`${open ? "" : "hidden"}`}>Create Invoice</span>
             </NavLink>
-          </li>
+          </li> */}
           <li>
             <NavLink
               to="inventory"
@@ -169,6 +170,27 @@ export default function Nav() {
                 <ReceiptText />
               </span>
               <span className={`${open ? "" : "hidden"}`}>Reciepts</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink
+              to="customers"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <Users2 />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Customers</span>
             </NavLink>
           </li>
         </ul>
