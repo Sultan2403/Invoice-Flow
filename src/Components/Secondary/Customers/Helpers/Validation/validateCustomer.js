@@ -6,6 +6,8 @@ export default function validateCustomer(customer) {
 
   if (!customer.name?.trim()) {
     errors.name = "Name is required";
+  } else if (customer.name.trim().length < 3) {
+    errors.name = "Name must be at least three characters";
   }
 
   if (!customer.email?.trim()) {
