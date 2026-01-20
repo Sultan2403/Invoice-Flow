@@ -1,13 +1,26 @@
+import isEmail from "validator/lib/isEmail";
+import { isValidPhoneNumber } from "react-phone-number-input";
+
 export default function validateCustomer(customer) {
   const errors = {};
-  if (!customer.name || customer.name.trim() === "") {
+
+  if (!customer.name?.trim()) {
     errors.name = "Name is required";
   }
-  if (!customer.email || customer.email.trim() === "") {
+
+  if (!customer.email?.trim()) {
     errors.email = "Email is required";
+  } else if (!isEmail(customer.email)) {
+    errors.email = "Invalid email address";
   }
-  if (!customer.phone || customer.phone.trim() === "") {
-    errors.phone = "Phone is required";
+
+  if (customer.phone && !isValidPhoneNumber(customer.phone)) {
+    errors.phone = "Invalid phone number";
   }
+
+  if (customer.address && customer.address.trim().length < 3) {
+    errors.address = "An address must be at least three characters";
+  }
+
   return errors;
 }
