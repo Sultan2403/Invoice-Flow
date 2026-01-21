@@ -8,7 +8,7 @@ import {
 export default function ItemSaleModal({ item, onClose, onAdd }) {
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
-  const [applyTax, setApplyTax] = useState(!!item?.taxRate);
+  const [applyTax, setApplyTax] = useState(item?.taxRate);
 
   const handleConfirm = () => {
     if (quantity < 1 || quantity > item.currentStock) {
@@ -60,13 +60,14 @@ export default function ItemSaleModal({ item, onClose, onAdd }) {
         fullWidth
       />
 
-      {item.taxRate != null && (
+      {item.taxRate && (
         <div className="flex items-center justify-between">
           <span className="text-sm">
             Tax: {(item.taxRate * 100).toFixed(2)}%
           </span>
           <Button
             size="small"
+            disabled={item.taxRate * 100 === 0 ? true : false}
             variant={applyTax ? "contained" : "outlined"}
             onClick={() => setApplyTax((prev) => !prev)}
           >

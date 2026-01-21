@@ -127,6 +127,8 @@ export default function QuickSale() {
             <p className="text-xs text-gray-500 mb-3">
               Select an item to add it to the cart. <br /> Click edit to edit it
               on the inventory level.
+              <strong>Note</strong>: Any edits made to items or customers will
+              take effect after the sale is completed.
             </p>
 
             <TextField
