@@ -33,6 +33,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
     adjustmentReason: "",
     category: "",
     imageUrl: "",
+    taxRate: 0,
   };
 
   const adjustmentReasons = [
@@ -83,14 +84,17 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
       const newQuantity = parseFloat(value) || 0;
       setQuantityChanged(newQuantity !== originalQuantity);
     }
+
     if (
       name === "price" ||
       name === "lowStockThreshold" ||
       name === "stockAdjustment" ||
       name === "currentStock"
     ) {
-      const numberval = parseFloat(value);
-      setInventoryItem((prev) => ({ ...prev, [name]: numberval }));
+      setInventoryItem((prev) => ({
+        ...prev,
+        [name]: value === "" ? "" : parseFloat(value),
+      }));
       return;
     }
 
@@ -118,6 +122,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
 
   const realInvItem = {
     ...inventoryItem,
+    taxRate: inventoryItem.taxRate ? inventoryItem.taxRate / 100 : 0,
     currentStock: finalStock,
     id: itemToEdit?.id || crypto.randomUUID(),
     reserved: itemToEdit?.reserved || 0,
@@ -344,6 +349,16 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
               onChange={handleChange}
               error={errors.sku}
               helperText={errors.sku || "Optional: alphanumeric and unique"}
+              fullWidth
+            />
+            <TextField
+              label="Tax Rate (%)"
+              name="taxRate"
+              type="number"
+              value={inventoryItem.taxRate || ""}
+              onChange={handleChange}
+              error={errors.taxRate}
+              helperText={errors.taxRate || "Optional: Enter as a percentage"}
               fullWidth
             />
             <TextField

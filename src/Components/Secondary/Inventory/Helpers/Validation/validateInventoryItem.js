@@ -24,11 +24,24 @@ export default function validateInventoryItem(item, isEdit) {
   }
 
   // Optional fields: validate numbers if provided
-  if (item.lowStockThreshold && isNaN(item.lowStockThreshold)) {
-    errors.lowStockThreshold =
-      "Low stock threshold must be a number greater than 0";
-  } else if (item.lowStockThreshold <= 0) {
-    errors.lowStockThreshold = "Low stock threshold must be greater than 0";
+  if (item.lowStockThreshold) {
+    if (isNaN(item.lowStockThreshold)) {
+      errors.lowStockThreshold =
+        "Low stock threshold must be a number greater than 0";
+    } else if (item.lowStockThreshold <= 0) {
+      errors.lowStockThreshold = "Low stock threshold must be greater than 0";
+    }
+    if (item.currentStock < item.lowStockThreshold) {
+      errors.lowStockThreshold =
+        "Low stock threshold cannot be greater than current stock";
+    }
+  }
+
+  if (
+    item.taxRate &&
+    (isNaN(item.taxRate) || item.taxRate < 0 || item.taxRate > 1)
+  ) {
+    errors.taxRate = "Tax rate must be a number between 0% and 100%";
   }
 
   if (!isEdit) {

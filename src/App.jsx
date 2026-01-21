@@ -15,6 +15,7 @@ import Receipt_Preview from "./Components/Secondary/Reciepts/UI/Templates/previe
 import InventoryForm from "./Components/Secondary/Inventory/UI/inventoryForm";
 import InventoryDisplay from "./Components/Secondary/Inventory/UI/inventoryDisplay";
 import Customer_Display from "./Components/Secondary/Customers/UI/customerDisplay";
+import Quick_Sale from "./Components/Secondary/POS Sale/posSale";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           />
           <Route path="inventory" element={<InventoryDisplay />} />
           <Route path="customers" element={<Customer_Display />} />
+          <Route path="pos-sale" element={<Quick_Sale />} />
         </Route>
       </Routes>
     </BrowserRouter>

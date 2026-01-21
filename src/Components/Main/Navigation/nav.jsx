@@ -7,6 +7,7 @@ import {
   ReceiptText,
   Boxes,
   Users2,
+  Zap,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -191,6 +192,26 @@ export default function Nav() {
                 <Users2 />
               </span>
               <span className={`${open ? "" : "hidden"}`}>Customers</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="pos-sale"
+              role="menuitem"
+              className={({ isActive }) =>
+                isActive
+                  ? `flex items-center gap-3 px-3 py-2 bg-white/10 rounded-md font-semibold ${
+                      open ? "" : "justify-center"
+                    }`
+                  : `flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-md transition ${
+                      open ? "" : "justify-center"
+                    }`
+              }
+            >
+              <span className="text-lg" aria-hidden>
+                <Zap />
+              </span>
+              <span className={`${open ? "" : "hidden"}`}>Quick Sale</span>
             </NavLink>
           </li>
         </ul>

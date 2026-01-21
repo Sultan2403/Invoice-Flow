@@ -55,6 +55,9 @@ export default function InventoryCard({ item, onEdit, onDelete }) {
           >
             Qty Left: {item.currentStock} units
           </p>
+          <p className="text-sm font-medium">
+            Tax Rate: {(item.taxRate * 100).toFixed(2)}%
+          </p>
         </div>
       </div>
 
