@@ -4,6 +4,8 @@ import { addNewCustomer, updateCustomer } from "../Helpers/Storage/customers";
 import { Button, TextField } from "@mui/material";
 import PhoneInputWithCountrySelect from "react-phone-number-input";
 import BasicModal from "../../../UI/Modal/modal";
+import FormControl from "@mui/material/FormControl";
+import FormHelperText from "@mui/material/FormHelperText";
 import { X } from "lucide-react";
 
 export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
@@ -100,12 +102,14 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
           error={errors.email}
           helperText={errors.email}
         ></TextField>
-        <PhoneInputWithCountrySelect
-          value={customer.phone}
-          onChange={(value) => {
-            setCustomer({ ...customer, phone: value });
-          }}
-        />
+        <FormControl error={Boolean(errors.phone)}>
+          <PhoneInputWithCountrySelect
+            placeholder="Enter phone number"
+            value={customer.phone}
+            onChange={(value) => setCustomer({ ...customer, phone: value })}
+          />
+          <FormHelperText>{errors.phone}</FormHelperText>
+        </FormControl>
         <TextField
           label="Address"
           name="address"

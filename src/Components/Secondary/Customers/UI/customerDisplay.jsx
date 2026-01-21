@@ -1,5 +1,5 @@
 import { deleteCustomer, getCustomers } from "../Helpers/Storage/customers";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Customer_Form from "./customerForm";
 import CustomerCard from "./customerCard";
 import BasicModal from "../../../UI/Modal/modal";
@@ -15,6 +15,12 @@ export default function Customer_Display() {
     () => getCustomers(),
     [editItem, deleteItem, feedback],
   );
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFeedback(false);
+    }, 5000);
+  }, [feedback]);
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Customers</h1>
