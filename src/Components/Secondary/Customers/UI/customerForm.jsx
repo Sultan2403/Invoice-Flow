@@ -56,10 +56,10 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
     }
 
     // Reset form after submission
+    onSubmit?.(customer);
     setCustomer(initialCustomerObj);
     setErrors({});
     setChanges(false);
-    onSubmit();
   };
 
   return (

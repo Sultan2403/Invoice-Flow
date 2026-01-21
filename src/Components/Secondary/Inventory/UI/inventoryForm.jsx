@@ -109,7 +109,7 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
     }
     setInventoryItem(defaultObj);
     setErrors({});
-    onSubmit?.();
+    onSubmit?.(invItem);
 
     handleClose();
   };

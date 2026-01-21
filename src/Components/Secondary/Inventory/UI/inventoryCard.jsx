@@ -1,6 +1,7 @@
 import { IconButton, Typography, Badge, Button } from "@mui/material";
 import { Edit2, Trash2 } from "lucide-react";
 import { currencyFormatter } from "../../../../Utils/helpers";
+import ProductImage from "../../../UI/Inventory/productImage";
 
 export default function InventoryCard({ item, onEdit, onDelete }) {
   const isLowStock =
@@ -11,15 +12,7 @@ export default function InventoryCard({ item, onEdit, onDelete }) {
     <div className="flex flex-col md:flex-row gap-4 p-4 bg-white border rounded-lg shadow-sm hover:shadow-md transition w-full">
       {/* Image */}
       <div className="w-full md:w-24 h-24 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden shrink-0">
-        {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="max-w-full max-h-full"
-          />
-        ) : (
-          <Typography className="text-gray-400 text-sm">No Image</Typography>
-        )}
+        <ProductImage imageUrl={item.imageUrl} name={item.name} />
       </div>
 
       {/* Content */}
