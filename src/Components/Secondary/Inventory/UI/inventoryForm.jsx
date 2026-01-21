@@ -179,11 +179,11 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
         <div className="flex flex-col gap-4 p-6">
           <h3 className="text-lg font-semibold">Unsaved Changes</h3>
           <p className="text-sm text-gray-600">
-            You have unsaved unsavedChanges. Are you sure you want to leave?
-            You’ll lose your edits.
+            You have unsaved changes. Are you sure you want to leave? You’ll
+            lose your edits.
           </p>
           <div className="flex justify-end gap-3 mt-2">
-            <Button variant="outlined" onClick={() => setChanges(false)}>
+            <Button variant="outlined" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
             <Button

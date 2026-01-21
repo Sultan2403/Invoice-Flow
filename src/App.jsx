@@ -15,7 +15,7 @@ import Receipt_Preview from "./Components/Secondary/Reciepts/UI/Templates/previe
 import InventoryForm from "./Components/Secondary/Inventory/UI/inventoryForm";
 import InventoryDisplay from "./Components/Secondary/Inventory/UI/inventoryDisplay";
 import Customer_Display from "./Components/Secondary/Customers/UI/customerDisplay";
-import Quick_Sale from "./Components/Secondary/POS Sale/posSale";
+import Quick_Sale from "./Components/Secondary/POS Sale/UI/PosSale";
 
 function App() {
   return (
