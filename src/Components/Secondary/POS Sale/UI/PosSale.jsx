@@ -11,6 +11,8 @@ import ProductImage from "../../../UI/Inventory/productImage";
 import BasicModal from "../../../UI/Modal/modal";
 import Customer_Form from "../../Customers/UI/customerForm";
 import ItemSaleModal from "./itemSaleModal";
+import ConfirmationModal from "./saleConfirmation";
+import { saveSaleData } from "../Helpers/Storage/storage";
 
 export default function QuickSale() {
   const customers = getCustomers();
@@ -21,9 +23,12 @@ export default function QuickSale() {
   const [itemsToSell, setItemsToSell] = useState([]);
   const [addNewItem, setAddNewItem] = useState(false);
   const [selectedItemForSale, setSelectedItemForSale] = useState(null);
+  const [confirmSale, setConfirmSale] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [customerSearchTerm, setCustomerSearchTerm] = useState("");
+  const [feedback, setFeedback] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Customers filtered by search term
   const filteredCustomers = useMemo(() => {
@@ -74,9 +79,48 @@ export default function QuickSale() {
     setItemsToSell((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleSubmit = () => {
+    setErrors({});
+
+    const validationErrors = validateSale(sale);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setConfirmSale(true);
+  };
+
   return (
     <div className="min-h-screen bg-blue-50 p-6">
       {/* Modals */}
+
+      <ConfirmationModal
+        open={confirmSale}
+        onClose={() => setConfirmSale(false)}
+        items={itemsToSell}
+        customer={selectedCustomer}
+        totalAmount={saleTotal}
+        onConfirm={() => {
+          const sale = {
+            ...itemsToSell,
+            customerId: selectedCustomer?.id || null,
+            soldAt: new Date().toISOString(),
+          };
+          saveSaleData(sale);
+          setConfirmSale(false);
+          setItemsToSell([]);
+          setFeedback(true);
+        }}
+      />
+
+      <BasicModal open={feedback} onClose={() => setFeedback(false)}>
+        <div className="p-6 bg-white rounded-lg shadow-md w-96">
+          <h2 className="text-xl font-semibold mb-4">Sale Completed</h2>
+          <p className="mb-2">The sale has been successfully completed.</p>
+        </div>
+      </BasicModal>
+
       <BasicModal
         open={customerFormOpen}
         onClose={() => setCustomerFormOpen(false)}
@@ -127,8 +171,6 @@ export default function QuickSale() {
             <p className="text-xs text-gray-500 mb-3">
               Select an item to add it to the cart. <br /> Click edit to edit it
               on the inventory level.
-              <strong>Note</strong>: Any edits made to items or customers will
-              take effect after the sale is completed.
             </p>
 
             <TextField
@@ -212,7 +254,8 @@ export default function QuickSale() {
                 Select a customer to attach them to this sale.
               </p>
               <p className="text-xs text-gray-500 mb-3">
-                Note a customer is not required for a quick sale.
+                Note a customer is not required for a quick sale. <br /> You can
+                also edit a customer's details directly here.
               </p>
 
               <TextField
@@ -372,6 +415,27 @@ export default function QuickSale() {
                 </div>
               )}
             </section>
+            {itemsToSell.length > 0 && (
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                className="mt-4"
+                onClick={handleSubmit}
+              >
+                Complete Sale
+              </Button>
+            )}
+            {Object.keys(errors).length > 0 && (
+              <div className="mt-2 p-3 border rounded bg-red-50 text-sm text-red-700">
+                <h4 className="font-semibold mb-1">Errors:</h4>
+                <ul className="list-disc list-inside">
+                  {Object.entries(errors).map(([field, message]) => (
+                    <li key={field}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </aside>
         </div>
       </div>
