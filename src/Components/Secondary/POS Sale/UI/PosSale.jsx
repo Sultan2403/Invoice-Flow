@@ -50,7 +50,8 @@ export default function QuickSale() {
       <TextField
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        label="Search Inventory"
+        label="Search"
+        helperText={"Search inventory by name"}
         className="ml-2"
         size="small"
         fullWidth
@@ -76,7 +77,7 @@ export default function QuickSale() {
           />
         ))
       ) : (
-        <div>No inventory items available.</div>
+        <div>No items found.</div>
       )}
     </div>
   );
