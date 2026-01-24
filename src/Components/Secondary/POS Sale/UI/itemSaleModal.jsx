@@ -14,7 +14,13 @@ export default function ItemSaleModal({
 }) {
   const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
-  const [applyTax, setApplyTax] = useState(item.applyTax);
+  const [applyTax, setApplyTax] = useState(item.applyTax || false);
+
+  useEffect(() => {
+    setQuantity("");
+    setError("");
+    setApplyTax(item.applyTax || false);
+  }, [item]);
 
   const handleConfirm = () => {
     if (quantity < 1 || quantity > item.currentStock) {
@@ -40,12 +46,12 @@ export default function ItemSaleModal({
     };
 
     if (isEdit) {
-      onEdit(finalItem);
+      onEdit?.(finalItem);
     } else {
-      onAdd(finalItem);
+      onAdd?.(finalItem);
     }
 
-    onClose();
+    onClose?.();
   };
 
   return (
