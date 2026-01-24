@@ -13,11 +13,8 @@ import CustomerSelector from "../../Customers/UI/customerSelector";
 import Customer_Form from "../../Customers/UI/customerForm";
 
 export default function QuickSale() {
-
-
-
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [isAddingNewCust, setIsAddingNewCust] = useState(false)
+  const [isAddingNewCust, setIsAddingNewCust] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [cartItems, setCartItems] = useState([]);
   const [currItem, setCurrItem] = useState(null);
@@ -61,8 +58,11 @@ export default function QuickSale() {
 
   return (
     <div>
-      <BasicModal open={isAddingNewCust} >
-        <Customer_Form onClose={()=>setIsAddingNewCust(false)} onSubmit={()=>setIsAddingNewCust(false)}/>
+      <BasicModal open={isAddingNewCust}>
+        <Customer_Form
+          onClose={() => setIsAddingNewCust(false)}
+          onSubmit={() => setIsAddingNewCust(false)}
+        />
       </BasicModal>
       <TextField
         value={searchTerm}
@@ -113,7 +113,9 @@ export default function QuickSale() {
       <div>
         <h2>Customers</h2>
         <div>
-                        <Button onClick={()=>setIsAddingNewCust(true)}>Add new customer</Button>
+          <Button onClick={() => setIsAddingNewCust(true)}>
+            Add new customer
+          </Button>
           {customers.length > 0 ? (
             <>
               {" "}
@@ -130,10 +132,7 @@ export default function QuickSale() {
               </p>
             </>
           ) : (
-            <div>
-              No customers found.
-
-            </div>
+            <div>No customers found.</div>
           )}
         </div>
       </div>
