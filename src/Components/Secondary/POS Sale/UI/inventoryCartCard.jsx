@@ -3,7 +3,7 @@ import ProductImage from "../../../UI/Inventory/productImage";
 
 export default function Cart_Card({ item, onAdd, onEdit, isInCart }) {
   return (
-    <div className="border rounded-lg shadow-sm p-4 flex gap-4 hover:shadow-md transition">
+    <div className="border my-4 rounded-lg shadow-sm p-4 flex gap-4 hover:shadow-md transition">
       {/* Product Image */}
       <div className="w-20 h-20 flex-shrink-0 rounded overflow-hidden border">
         <ProductImage imageUrl={item.imageUrl} name={item.name} />
