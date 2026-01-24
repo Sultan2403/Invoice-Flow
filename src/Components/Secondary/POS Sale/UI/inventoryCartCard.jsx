@@ -1,7 +1,17 @@
 import { Button } from "@mui/material";
 import ProductImage from "../../../UI/Inventory/productImage";
 
-export default function Cart_Card({ item, onAdd, onEdit, isInCart }) {
+export default function Inventory_Card({
+  item,
+  onAdd,
+  onEdit,
+  isInCart,
+  itemInCart,
+}) {
+  const inCart = isInCart(item.id);
+
+  const cartItem = itemInCart(item.id);
+
   return (
     <div className="border my-4 rounded-lg shadow-sm p-4 flex gap-4 hover:shadow-md transition">
       {/* Product Image */}
@@ -21,14 +31,20 @@ export default function Cart_Card({ item, onAdd, onEdit, isInCart }) {
             Price: <strong>${item.price}</strong>
           </p>
           <p
-            className={`text-sm mt-1 ${
-              item.currentStock <= item.lowStockThreshold
-                ? "text-red-500"
-                : "text-gray-500"
-            }`}
+            className={`text-sm mt-1 ${item.currentStock <= item.lowStockThreshold ? "text-red-500" : "text-gray-500"}`}
           >
-            Stock: {item.currentStock}
+            {inCart ? "Initial Stock" : "Current Stock"}: {item.currentStock}
           </p>
+          {inCart && (
+            <p className="text-sm text-blue-700">
+              Quantity in Cart: {cartItem?.quantity}
+            </p>
+          )}
+          {inCart && (
+            <p className="text-sm text-gray-500">
+              Remaining Stock: {item.currentStock - cartItem?.quantity}
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -36,15 +52,19 @@ export default function Cart_Card({ item, onAdd, onEdit, isInCart }) {
           <Button
             size="small"
             variant="contained"
-            disabled={item.currentStock === 0 || isInCart(item.id)}
+            disabled={item.currentStock === 0 || inCart}
             onClick={() => onAdd(item)}
           >
-            {isInCart(item.id) ? "In Cart" : item.currentStock === 0 ?"Out of Stock" : "Add to Cart"}
+            {inCart
+              ? "In Cart"
+              : item.currentStock === 0
+                ? "Out of Stock"
+                : "Add to Cart"}
           </Button>
-
+          {/* 
           <Button size="small" variant="outlined" onClick={() => onEdit(item)}>
             Edit
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

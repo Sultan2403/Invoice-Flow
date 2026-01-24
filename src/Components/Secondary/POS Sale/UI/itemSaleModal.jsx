@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, TextField } from "@mui/material";
 import {
   calculateItemSubtotal,
@@ -6,7 +6,7 @@ import {
 } from "../Helpers/Calc/calcs";
 
 export default function ItemSaleModal({
-  item,
+  item={},
   onClose,
   onAdd,
   onEdit,
@@ -17,7 +17,7 @@ export default function ItemSaleModal({
   const [applyTax, setApplyTax] = useState(item.applyTax || false);
 
   useEffect(() => {
-    setQuantity("");
+    setQuantity(item.quantity || "");
     setError("");
     setApplyTax(item.applyTax || false);
   }, [item]);
@@ -80,6 +80,7 @@ export default function ItemSaleModal({
         <span className="text-sm">
           Tax: {item.taxRate ? (item.taxRate * 100).toFixed(2) : 0}%
         </span>
+
         <Button
           size="small"
           disabled={item.taxRate * 100 === 0 ? true : false}

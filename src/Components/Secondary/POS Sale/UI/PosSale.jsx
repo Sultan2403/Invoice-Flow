@@ -2,11 +2,12 @@ import { useMemo, useState } from "react";
 import { getCustomers } from "../../Customers/Helpers/Storage/customers";
 import { getInventoryItems } from "../../Inventory/Helpers/Storage/inventory";
 import { sortInventoryByName } from "../../Inventory/Helpers/Sorting/sortInventory";
-import Cart_Card from "./inventoryCartCard";
+import Inventory_Card from "./inventoryCartCard";
 import searchInventory from "../../Inventory/Helpers/Search/searchInventory";
 import { TextField } from "@mui/material";
 import BasicModal from "../../../UI/Modal/modal";
 import ItemSaleModal from "./itemSaleModal";
+import Cart_Items from "./cartItems";
 
 export default function QuickSale() {
   const customers = useMemo(() => getCustomers(), []);
@@ -38,7 +39,12 @@ export default function QuickSale() {
     );
   };
 
+  const removeCartItem = (itemToRemove) =>{
+    setCartItems((prev) => prev.filter((i)=> i.id !== itemToRemove.id))
+  }
+
   const isInCart = (id) => cartItems.some((i) => i.id === id);
+  const itemInCart = (id)=> cartItems.find((i)=> i.id === id) || {}
 
   const onEditItem = (item) => {
     setIsEditingCartItem(true);
@@ -68,17 +74,26 @@ export default function QuickSale() {
       <h2 className="text-lg font-bold">Your Inventory</h2>
       {sortedInventory.length > 0 ? (
         sortedInventory.map((item) => (
-          <Cart_Card
+          <Inventory_Card
             key={item.id}
             onAdd={(item) => onAddItem(item)}
             // onEdit={(item)=> onEditItem(item)} Belongs on the cart level and this shd prompt you to update the item on the inventory level
             item={item}
             isInCart={isInCart}
+            itemInCart={itemInCart}
           />
         ))
       ) : (
-        <div>No items found.</div>
+        <div>
+          <div>No items found.</div>
+          <Button></Button>
+        </div>
       )}
+
+      <div>
+        <h2>Cart</h2>
+        <Cart_Items cartItems={cartItems} onEdit={(item) => onEditItem(item)} onRemove={(item)=>removeCartItem(item)}/>
+      </div>
     </div>
   );
 }
