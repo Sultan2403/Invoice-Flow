@@ -4,6 +4,7 @@ import Customer_Form from "./customerForm";
 import CustomerCard from "./customerCard";
 import BasicModal from "../../../UI/Modal/modal";
 import { Button } from "@mui/material";
+import CustomerSelector from "./customerSelector";
 
 export default function Customer_Display() {
   const [formOpen, setFormOpen] = useState(false);
@@ -29,7 +30,12 @@ export default function Customer_Display() {
         <div>
           <p>No customers found.</p>
         </div>
-      ) : (
+      ) : (<>
+
+
+      
+      { 
+        
         customers.map((customer) => (
           <CustomerCard
             key={customer.id}
@@ -44,6 +50,9 @@ export default function Customer_Display() {
             }}
           />
         ))
+        }
+      </>
+       
       )}
       <BasicModal open={confirmation} onClose={() => setConfirmation(false)}>
         <div>

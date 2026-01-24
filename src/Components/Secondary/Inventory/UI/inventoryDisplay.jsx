@@ -15,6 +15,7 @@ import {
 import { MenuItem, TextField } from "@mui/material";
 import searchInventory from "../Helpers/Search/searchInventory";
 import getInventoryItemById from "../Helpers/Search/findItemById";
+import InvSelector from "./inventorySelector";
 
 export default function InventoryDisplay() {
   const [formOpen, setFormOpen] = useState(false);
@@ -91,14 +92,7 @@ export default function InventoryDisplay() {
       </TextField>
 
       <div className="flex gap-4">
-        <TextField
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          label="Search Inventory"
-          className="ml-2"
-          size="small"
-          fullWidth
-        />
+       <InvSelector invItems={inventory} setSearchTerm={setSearchTerm}/>
         <TextField
           select
           fullWidth
