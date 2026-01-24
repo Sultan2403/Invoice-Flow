@@ -23,6 +23,8 @@ export default function QuickSale() {
   const [itemsToSell, setItemsToSell] = useState([]);
   const [addNewItem, setAddNewItem] = useState(false);
   const [selectedItemForSale, setSelectedItemForSale] = useState(null);
+  const [editingCartItem, setEditingCartItem] = useState(null);
+
   const [confirmSale, setConfirmSale] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,8 +73,16 @@ export default function QuickSale() {
     [itemsToSell],
   );
 
-  const handleAddOrEditItem = (item) => {
+  const handleEditItem = (item) => {
+    setEditingCartItem(item);
     setSelectedItemForSale(item);
+  };
+
+  const handleCartEdit = (updatedItem) => {
+    setItemsToSell((prev) =>
+      prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
+    );
+    setEditingCartItem(null);
   };
 
   const handleRemoveItem = (id) => {
@@ -103,7 +113,7 @@ export default function QuickSale() {
         totalAmount={saleTotal}
         onConfirm={() => {
           const sale = {
-            ...itemsToSell,
+            items: [...itemsToSell],
             customerId: selectedCustomer?.id || null,
             soldAt: new Date().toISOString(),
           };
@@ -145,11 +155,17 @@ export default function QuickSale() {
       >
         <ItemSaleModal
           item={selectedItemForSale}
+          isEdit={Boolean(editingCartItem)}
           onAdd={(item) => {
-            setSelectedItemForSale(null);
             setItemsToSell((prev) => [...prev, item]);
           }}
-          onClose={() => setSelectedItemForSale(null)}
+          onEdit={(updatedItem) => {
+            handleCartEdit(updatedItem);
+          }}
+          onClose={() => {
+            setSelectedItemForSale(null);
+            setEditingCartItem(null);
+          }}
         />
       </BasicModal>
 
@@ -387,7 +403,7 @@ export default function QuickSale() {
                         <Button
                           size="small"
                           variant="outlined"
-                          onClick={() => handleAddOrEditItem(item)}
+                          onClick={() => handleEditItem(item)}
                         >
                           Edit
                         </Button>

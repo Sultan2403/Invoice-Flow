@@ -5,21 +5,29 @@ import {
   calculateItemTotal,
 } from "../Helpers/Calc/calcs";
 
-export default function ItemSaleModal({ item, onClose, onAdd }) {
-  const [quantity, setQuantity] = useState(1);
+export default function ItemSaleModal({
+  item,
+  onClose,
+  onAdd,
+  onEdit,
+  isEdit = false,
+}) {
+  const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
-  const [applyTax, setApplyTax] = useState(item?.taxRate);
+  const [applyTax, setApplyTax] = useState(item.applyTax);
 
   const handleConfirm = () => {
     if (quantity < 1 || quantity > item.currentStock) {
-      setError(`Quantity must be between 1 and ${item.currentStock}`);
+      setError(
+        `Quantity must be between 1 and ${item.currentStock > 0 ? item.currentStock : 1}`,
+      );
       return;
     }
 
     const tempItem = {
       id: item.id,
       name: item.name,
-      unitPrice: item.price,
+      unitPrice: item.price || item.unitPrice,
       quantity,
       taxRate: item.taxRate || 0,
       applyTax,
@@ -31,9 +39,11 @@ export default function ItemSaleModal({ item, onClose, onAdd }) {
       total: calculateItemTotal(tempItem),
     };
 
-    onAdd({
-      ...finalItem,
-    });
+    if (isEdit) {
+      onEdit(finalItem);
+    } else {
+      onAdd(finalItem);
+    }
 
     onClose();
   };
@@ -60,21 +70,19 @@ export default function ItemSaleModal({ item, onClose, onAdd }) {
         fullWidth
       />
 
-      {item.taxRate && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm">
-            Tax: {(item.taxRate * 100).toFixed(2)}%
-          </span>
-          <Button
-            size="small"
-            disabled={item.taxRate * 100 === 0 ? true : false}
-            variant={applyTax ? "contained" : "outlined"}
-            onClick={() => setApplyTax((prev) => !prev)}
-          >
-            {applyTax ? "Tax Applied" : "Apply Tax"}
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center justify-between">
+        <span className="text-sm">
+          Tax: {item.taxRate ? (item.taxRate * 100).toFixed(2) : 0}%
+        </span>
+        <Button
+          size="small"
+          disabled={item.taxRate * 100 === 0 ? true : false}
+          variant={applyTax ? "contained" : "outlined"}
+          onClick={() => setApplyTax((prev) => !prev)}
+        >
+          {applyTax ? "Tax Applied" : "Apply Tax"}
+        </Button>
+      </div>
 
       <div className="flex justify-end gap-2 pt-2">
         <Button variant="outlined" onClick={onClose}>
