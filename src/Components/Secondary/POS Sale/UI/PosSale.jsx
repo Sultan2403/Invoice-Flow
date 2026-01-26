@@ -19,6 +19,8 @@ export default function QuickSale() {
   const [cartItems, setCartItems] = useState([]);
   const [currItem, setCurrItem] = useState(null);
   const [isEditingCartItem, setIsEditingCartItem] = useState(false);
+  const [customerWarning, setCustomerWarning] = useState(false)
+  const [error, setError] = useState("")
 
   const customers = useMemo(() => getCustomers(), [isAddingNewCust]);
   const inventory = useMemo(() => getInventoryItems(), []);
@@ -56,8 +58,34 @@ export default function QuickSale() {
     setCurrItem(item);
   };
 
+  const handleSubmit = () => {
+    if(cartItems.length === 0){
+      setError("At least one cart item is required to make a sale.")
+    } if(!selectedCustomer){
+      setCustomerWarning(true)
+    } else{
+
+    }
+  }
+
+  const finalizeSale = ()=>{
+    const sale = {
+      id: crypto.randomUUID(),
+      items: [...cartItems],
+      customer: selectedCustomer,
+    }
+  }
+
   return (
     <div>
+      <BasicModal open={customerWarning} onClose={()=>setCustomerWarning(false)}>
+        <h1>No Customer</h1>
+        <p>Proceed without a customer?</p>
+        <div>
+          <Button>Proceed</Button>
+          <Button>Cancel</Button>
+        </div>
+      </BasicModal>
       <BasicModal open={isAddingNewCust}>
         <Customer_Form
           onClose={() => setIsAddingNewCust(false)}
