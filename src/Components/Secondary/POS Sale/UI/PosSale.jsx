@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import { getCustomers } from "../../Customers/Helpers/Storage/customers";
-import { getInventoryItems } from "../../Inventory/Helpers/Storage/inventory";
+import { getInventoryItems, updateInventoryItem } from "../../Inventory/Helpers/Storage/inventory";
 import { sortInventoryByName } from "../../Inventory/Helpers/Sorting/sortInventory";
 import Inventory_Card from "./inventoryCartCard";
+import Customer_Form from "../../Customers/UI/customerForm";
 import searchInventory from "../../Inventory/Helpers/Search/searchInventory";
 import { Button, TextField } from "@mui/material";
 import BasicModal from "../../../UI/Modal/modal";
 import ItemSaleModal from "./itemSaleModal";
 import Cart_Items from "./cartItems";
-import Customer_Card from "../../Customers/UI/customerSelector";
 import CustomerSelector from "../../Customers/UI/customerSelector";
-import Customer_Form from "../../Customers/UI/customerForm";
+import saveReceipt from "../../Reciepts/Helpers/Storage/saveReceipt";
 
 export default function QuickSale() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -69,21 +69,64 @@ export default function QuickSale() {
   }
 
   const finalizeSale = ()=>{
-    const sale = {
-      id: crypto.randomUUID(),
-      items: [...cartItems],
-      customer: selectedCustomer,
+    // validate stock before committing
+    const inventory = getInventoryItems();
+    for (const ci of cartItems) {
+      const inv = inventory.find((i) => i.id === ci.id);
+      if (!inv || Number(inv.currentStock || 0) < Number(ci.quantity || 0)) {
+        setError(`Insufficient stock for ${ci.name}`);
+        return;
+      }
     }
+
+    // decrement stock
+    for (const ci of cartItems) {
+      const inv = getInventoryItems().find((i) => i.id === ci.id);
+      const updated = { ...inv, currentStock: Number(inv.currentStock || 0) - Number(ci.quantity || 0) };
+      // reduce reserved if present
+      if (updated.reserved) {
+        updated.reserved = Math.max(0, Number(updated.reserved) - Number(ci.quantity || 0));
+      }
+      updateInventoryItem(updated);
+    }
+
+    // create receipt
+    const total = cartItems.reduce((s, it) => s + Number(it.total || 0), 0);
+    const receipt = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      items: cartItems,
+      customer: selectedCustomer,
+      total,
+      source: "POS",
+    };
+
+    saveReceipt(receipt);
+
+    // clear cart and show confirmation
+    setCartItems([]);
+    setCurrItem(null);
+    setError("");
   }
 
   return (
     <div>
       <BasicModal open={customerWarning} onClose={()=>setCustomerWarning(false)}>
-        <h1>No Customer</h1>
-        <p>Proceed without a customer?</p>
-        <div>
-          <Button>Proceed</Button>
-          <Button>Cancel</Button>
+        <div className="p-4">
+          <h1 className="text-lg font-semibold">No Customer</h1>
+          <p className="text-sm text-gray-600">Proceed without a customer?</p>
+          <div className="flex gap-2 justify-end mt-3">
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setCustomerWarning(false);
+                finalizeSale();
+              }}
+            >
+              Proceed
+            </Button>
+            <Button variant="contained" onClick={()=>setCustomerWarning(false)}>Cancel</Button>
+          </div>
         </div>
       </BasicModal>
       <BasicModal open={isAddingNewCust}>
@@ -92,15 +135,26 @@ export default function QuickSale() {
           onSubmit={() => setIsAddingNewCust(false)}
         />
       </BasicModal>
-      <TextField
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        label="Search"
-        helperText={"Search inventory by name"}
-        className="ml-2"
-        size="small"
-        fullWidth
-      />
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+        <TextField
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          label="Search Inventory"
+          helperText={"Search inventory by name"}
+          className="ml-2"
+          size="small"
+          fullWidth
+        />
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <div className="flex gap-2">
+            <Button variant="outlined" onClick={() => setIsAddingNewCust(true)}>Add Customer</Button>
+            <Button variant="contained" onClick={() => { if(cartItems.length===0) setError('Cart empty'); else if(!selectedCustomer) setCustomerWarning(true); else finalizeSale(); }}>Checkout</Button>
+          </div>
+          <div className="text-xs text-gray-500 mt-2 md:mt-0">
+            <strong>Note:</strong> Checkout will decrement stock immediately. Ensure payment is confirmed; this action cannot be reversed.
+          </div>
+        </div>
+      </div>
       <BasicModal open={Boolean(currItem)}>
         <ItemSaleModal
           item={currItem}
@@ -110,7 +164,7 @@ export default function QuickSale() {
           onAdd={(item) => setCartItems((prev) => [...prev, item])}
         />
       </BasicModal>
-      <h2 className="text-lg font-bold">Your Inventory</h2>
+      <h2 className="text-lg font-bold text-blue-800 mb-2">Inventory</h2>
       {sortedInventory.length > 0 ? (
         sortedInventory.map((item) => (
           <Inventory_Card
@@ -129,8 +183,9 @@ export default function QuickSale() {
         </div>
       )}
 
-      <div>
-        <h2>Cart</h2>
+      <div className="mt-6">
+        <h2 className="text-lg font-bold text-blue-800">Cart</h2>
+        {error && <div className="text-sm text-red-600">{error}</div>}
         <Cart_Items
           cartItems={cartItems}
           onEdit={(item) => onEditItem(item)}
@@ -141,27 +196,19 @@ export default function QuickSale() {
       <div>
         <h2>Customers</h2>
         <div>
-          <Button onClick={() => setIsAddingNewCust(true)}>
-            Add new customer
-          </Button>
-          {customers.length > 0 ? (
-            <>
-              {" "}
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setIsAddingNewCust(true)} variant="outlined">Add new customer</Button>
+            {customers.length > 0 && (
               <CustomerSelector
                 customers={customers}
                 selectedCustomer={selectedCustomer}
                 setSelectedCustomer={setSelectedCustomer}
               />
-              <p>
-                Selected Customer:
-                {selectedCustomer
-                  ? ` Name: ${selectedCustomer.name} | Email: ${selectedCustomer.email}`
-                  : " No customer selected"}
-              </p>
-            </>
-          ) : (
-            <div>No customers found.</div>
-          )}
+            )}
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Selected Customer: {selectedCustomer ? `${selectedCustomer.name} | ${selectedCustomer.email}` : "No customer selected"}
+          </p>
         </div>
       </div>
     </div>

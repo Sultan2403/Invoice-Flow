@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { getInvoices } from "../../Helpers/Storage/getInvoices";
 import { Check, CircleAlert, FilePlus, PlusIcon, Trash2Icon, Plus } from "lucide-react";
 import SimpleModal from "../../../../UI/Modal/modal";
 import FormControl from "@mui/material/FormControl";
@@ -40,11 +42,50 @@ export default function CreateInvoice() {
   const [feedback, setFeedback] = useState(false);
 
   // Load customers and inventory on mount
+  const location = useLocation();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [originalInvoiceId, setOriginalInvoiceId] = useState(null);
+  const [editingItemId, setEditingItemId] = useState(null);
+
   useEffect(() => {
     setCustomers(getCustomers());
     const invItems = getInventoryItems();
     setInventoryItems(invItems);
     setInventorySnapshot(invItems);
+
+    // check if navigated for edit
+    const invoiceId = location?.state?.invoiceId || location?.state?.invoice?.id;
+    if (invoiceId) {
+      const invoice = getInvoices().find((inv) => inv.id === invoiceId);
+      if (invoice && invoice.status === "Draft") {
+        setIsEditMode(true);
+        setOriginalInvoiceId(invoice.id);
+        setInvoiceName(invoice.name || "");
+        setSelectedCustomer(invoice.customer || null);
+        setIssueDate(invoice.issueDate || today);
+        setDueDate(invoice.dueDate || null);
+
+        const mapped = (invoice.items || []).map((it) => {
+          const unitPrice = it.unitPrice ?? it.price ?? 0;
+          const taxRate = it.taxRate ?? (it.tax ? Number(it.tax) / 100 : 0);
+          const quantity = Number(it.quantity || it.qty || 0);
+          const subtotal = it.subtotal ?? unitPrice * quantity;
+          const total = it.total ?? subtotal + subtotal * taxRate;
+          return {
+            ...it,
+            id: it.id || crypto.randomUUID(),
+            unitPrice,
+            taxRate,
+            quantity,
+            subtotal,
+            total,
+            invoiceItemId: it.invoiceItemId || crypto.randomUUID(),
+          };
+        });
+
+        setItems(mapped);
+      }
+    }
   }, []);
 
   // Calculate totals
@@ -62,15 +103,44 @@ export default function CreateInvoice() {
     setItems((prev) => prev.filter((item) => item.invoiceItemId !== id));
   }
 
-  // Handle inventory item selection
-  function handleSelectInventoryItem(item) {
-    setSelectedItemForSale(item);
+  // Start editing an existing item in the invoice
+  function StartItemEdit(invoiceItemId) {
+    const itemToEdit = items.find((it) => it.invoiceItemId === invoiceItemId);
+    if (!itemToEdit) return;
+
+    // enrich with currentStock from inventory snapshot if available
+    const inv = inventorySnapshot.find((i) => i.id === itemToEdit.id);
+    const modalItem = {
+      id: itemToEdit.id,
+      name: itemToEdit.name,
+      price: itemToEdit.unitPrice ?? itemToEdit.price,
+      unitPrice: itemToEdit.unitPrice ?? itemToEdit.price,
+      quantity: itemToEdit.quantity,
+      taxRate: itemToEdit.taxRate ?? 0,
+      applyTax: itemToEdit.applyTax ?? false,
+      currentStock: inv?.currentStock ?? 0,
+    };
+
+    setSelectedItemForSale(modalItem);
+    setEditingItemId(invoiceItemId);
     setItemSaleModalOpen(true);
   }
 
   // Handle adding item to invoice (from itemSaleModal)
   function handleAddItemToInvoice(finalItem) {
     setItems((prevItems) => [...prevItems, { ...finalItem, invoiceItemId: crypto.randomUUID() }]);
+    setItemSaleModalOpen(false);
+    setSelectedItemForSale(null);
+  }
+
+  // Handle saving edits from modal
+  function handleSaveEditedItem(updatedItem) {
+    setItems((prev) =>
+      prev.map((it) =>
+        it.invoiceItemId === editingItemId ? { ...updatedItem, invoiceItemId: editingItemId } : it,
+      ),
+    );
+    setEditingItemId(null);
     setItemSaleModalOpen(false);
     setSelectedItemForSale(null);
   }
@@ -119,6 +189,7 @@ export default function CreateInvoice() {
       submitInvoice(invoice);
       setSuccess(true);
       setFeedback(true);
+      setSelectedCustomer(null)
       return;
     }
 
@@ -197,7 +268,7 @@ export default function CreateInvoice() {
               onChange={(e) => setIssueDate(e.target.value)}
               fullWidth
               error={Boolean(errors.issueDate)}
-              helperText={errors.issueDate}
+              helperText={errors.issueDate || "Defaults to today."}
               slotProps={{
                 htmlInput: { min: today },
                 inputLabel: { shrink: true },
@@ -261,14 +332,24 @@ export default function CreateInvoice() {
                       </div>
                     </div>
 
-                    {/* Right: Remove button */}
+                    {/* Right: Actions */}
                     <div className="flex gap-2 sm:flex-col sm:items-end mt-2 sm:mt-0">
+                      <Button
+                        type="button"
+                        onClick={() => StartItemEdit(item.invoiceItemId)}
+                        variant="outlined"
+                        size="small"
+                        className="w-24"
+                      >
+                        Edit
+                      </Button>
                       <Button
                         type="button"
                         onClick={() => removeItem(item.invoiceItemId)}
                         variant="contained"
                         color="error"
                         size="small"
+                        className="w-24"
                       >
                         Remove
                       </Button>
@@ -356,11 +437,14 @@ export default function CreateInvoice() {
         >
           <ItemSaleModal
             item={selectedItemForSale}
+            isEdit={Boolean(editingItemId)}
             onClose={() => {
               setItemSaleModalOpen(false);
               setSelectedItemForSale(null);
+              setEditingItemId(null);
             }}
             onAdd={handleAddItemToInvoice}
+            onEdit={handleSaveEditedItem}
           />
         </SimpleModal>
 

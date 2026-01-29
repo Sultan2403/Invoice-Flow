@@ -217,9 +217,14 @@ export default function DisplayInvoice() {
           {/* <Button variant="contained">Edit</Button> */}
 
           {invoice.status === "Draft" && (
-            <Button variant="contained" onClick={() => sendInvToCustomer()}>
-              Send to Customer
-            </Button>
+            <div className="flex gap-2">
+              <NavLink to="/invoices/create" state={{ invoiceId: invoice.id }}>
+                <Button variant="contained">Edit Invoice</Button>
+              </NavLink>
+              <Button variant="contained" onClick={() => sendInvToCustomer()}>
+                Send to Customer
+              </Button>
+            </div>
           )}
 
           {invoice.status === "Sent" && (

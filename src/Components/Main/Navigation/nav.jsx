@@ -51,7 +51,9 @@ export default function Nav() {
             IF
           </div>
           <div className={`${open ? "block" : "hidden"}`}>
-            <div className="text-2xl font-bold leading-4">Invoice Flow</div>
+            <div className="text-2xl font-bold leading-4">
+              
+            </div>
             <div className="text-xs text-white/90">Manage your invoices</div>
           </div>
         </NavLink>

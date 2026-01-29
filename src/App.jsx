@@ -30,7 +30,7 @@ function App() {
             path="invoices/view/:invoiceId/pdf-preview"
             element={<PreviewInvoice />}
           />
-          <Route path="invoices/edit/:invoiceId" element={<Edit_Invoice />} />
+          <Route path="invoices/edit/:invoiceId" element={<Create_Invoice />} />
           <Route path="receipts" element={<Receipts />} />
           <Route
             path="receipts/view/:receiptId"
