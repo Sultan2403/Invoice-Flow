@@ -63,7 +63,7 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
   };
 
   return (
-    <div className="border p-4 rounded shadow-sm mt-6">
+    <div className="border p-6 rounded shadow-sm mt-6 max-w-md mx-auto relative">
       <BasicModal open={modalOpen}>
         <div className="p-4">
           <h2 className="text-xl font-semibold mb-2">Unsaved Changes</h2>
@@ -83,9 +83,10 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
           </div>
         </div>
       </BasicModal>
-      <h2 className="text-xl font-semibold mb-4">Customer Form</h2>
-      <X className="hover:cursor-pointer" onClick={checkUnsavedChanges} />
-      <div>
+      <h2 className="text-xl font-semibold mb-4 text-center">Customer Form</h2>
+      <X className="hover:cursor-pointer absolute top-4 right-4" onClick={checkUnsavedChanges} />
+
+      <div className="flex flex-col gap-3">
         <TextField
           label="Name *"
           name="name"
@@ -93,7 +94,8 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
           onChange={handleChange}
           error={errors.name}
           helperText={errors.name}
-        ></TextField>
+          fullWidth
+        />
         <TextField
           label="Email *"
           name="email"
@@ -101,15 +103,20 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
           onChange={handleChange}
           error={errors.email}
           helperText={errors.email}
-        ></TextField>
-        <FormControl error={Boolean(errors.phone)}>
-          <PhoneInputWithCountrySelect
-            placeholder="Enter phone number"
-            value={customer.phone}
-            onChange={(value) => setCustomer({ ...customer, phone: value })}
-          />
-          <FormHelperText>{errors.phone}</FormHelperText>
-        </FormControl>
+          fullWidth
+        />
+
+        <div>
+          <FormControl error={Boolean(errors.phone)} fullWidth>
+            <PhoneInputWithCountrySelect
+              placeholder="Enter phone number"
+              value={customer.phone}
+              onChange={(value) => setCustomer({ ...customer, phone: value })}
+            />
+            <FormHelperText>{errors.phone}</FormHelperText>
+          </FormControl>
+        </div>
+
         <TextField
           label="Address"
           name="address"
@@ -117,12 +124,17 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
           helperText={errors.address}
           error={errors.address}
           onChange={handleChange}
-        ></TextField>
+          fullWidth
+        />
 
-        <Button onClick={checkUnsavedChanges}>Cancel</Button>
-        <Button onClick={handleSubmit}>
-          {editCustomer ? "Update Customer" : "Add Customer"}
-        </Button>
+        <div className="flex justify-end gap-2 mt-2">
+          <Button onClick={checkUnsavedChanges} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} variant="contained">
+            {editCustomer ? "Update Customer" : "Add Customer"}
+          </Button>
+        </div>
       </div>
     </div>
   );
