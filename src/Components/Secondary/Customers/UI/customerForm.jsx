@@ -108,11 +108,14 @@ export default function Customer_Form({ editCustomer, onSubmit, onClose }) {
 
         <div>
           <FormControl error={Boolean(errors.phone)} fullWidth>
-            <PhoneInputWithCountrySelect
-              placeholder="Enter phone number"
-              value={customer.phone}
-              onChange={(value) => setCustomer({ ...customer, phone: value })}
-            />
+            <div className="flex items-center gap-2 p-2 border rounded bg-gray-50" style={{alignItems: 'center'}}>
+              <PhoneInputWithCountrySelect
+                className="w-full"
+                placeholder="Enter phone number"
+                value={customer.phone}
+                onChange={(value) => setCustomer({ ...customer, phone: value })}
+              />
+            </div>
             <FormHelperText>{errors.phone}</FormHelperText>
           </FormControl>
         </div>
