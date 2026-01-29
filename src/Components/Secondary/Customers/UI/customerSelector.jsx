@@ -15,7 +15,7 @@ export default function CustomerSelector({customers, selectedCustomer, setSelect
       value={selectedCustomer || localCust}
       onChange={(event, newValue) => {setSelectedCustomer?.(newValue); setLocalCust(newValue)}}
       renderInput={(params) => (
-        <TextField {...params} label="Select Customer (optional)" size="small" fullWidth />
+        <TextField {...params} label="Select Customer *" size="small" fullWidth required />
       )}
       isOptionEqualToValue={(option, value) => option.id === value?.id}
     />

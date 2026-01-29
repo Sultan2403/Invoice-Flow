@@ -178,7 +178,7 @@ export default function DisplayInvoice() {
               <td className="py-2 px-2">{item.name}</td>
               <td className="py-2 px-2">{item.description}</td>
               <td className="py-2 px-2 text-right">{item.quantity}</td>
-              <td className="py-2 px-2 text-right">${item.price.toFixed(2)}</td>
+              <td className="py-2 px-2 text-right">${item.unitPrice?.toFixed(2)}</td>
               {hasItemTaxes && (
                 <td className="py-2 px-2 text-right">
                   {item.tax > 0 ? `${item.tax}%` : "-"}
@@ -197,7 +197,7 @@ export default function DisplayInvoice() {
             <strong>Subtotal:</strong> ${invoice.itemsSubtotal.toFixed(2)}
           </p>
           <p>
-            <strong>Tax:</strong> ${invoice.taxAmount.toFixed(2)}
+            <strong>Tax:</strong> ${invoice.taxAmount?.toFixed(2) || 0}
           </p>
           <p className="text-xl font-bold">
             Total: ${invoice.total.toFixed(2)}

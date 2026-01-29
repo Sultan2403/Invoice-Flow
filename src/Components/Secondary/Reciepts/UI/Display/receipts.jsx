@@ -7,30 +7,34 @@ export default function Receipts() {
 
   if (!receipts.length) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-3">
-        <h3 className="text-lg font-semibold">No receipts yet</h3>
-        <p className="text-sm text-gray-500 max-w-sm">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center gap-4 p-6">
+        <h2 className="text-2xl font-bold text-gray-800">No receipts yet</h2>
+        <p className="text-gray-600 max-w-md">
           Receipts are generated when invoices are marked as paid.
         </p>
 
         <NavLink
-          to="/invoices"
-          className="mt-2 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          to="/invoices/view"
+          className="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition shadow-md"
         >
-          Go to Invoices
+          View Invoices
         </NavLink>
       </div>
     );
   }
 
   return (
-    <div className="px-4 py-6">
-      <h2 className="mb-6 text-xl font-semibold">Receipts</h2>
+    <div className="min-h-screen bg-gray-50 py-8 px-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-gray-800">Receipts</h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {receipts.map((receipt) => (
-          <ReceiptCard key={receipt.id} receipt={receipt} />
-        ))}
+        {/* Grid of Receipts */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {receipts.map((receipt) => (
+            <ReceiptCard key={receipt.id} receipt={receipt} />
+          ))}
+        </div>
       </div>
     </div>
   );

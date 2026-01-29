@@ -230,102 +230,104 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
       <BasicModal
         open={open}
         onClose={() => {}}
-        sx={{ width: "min(95vw, 700px)" }}
+        sx={{ width: "min(95vw, 800px)" }}
       >
-        <div className="flex justify-end mb-2">
-          <IconButton onClick={handleModalChange} size="small">
-            <X size={20} />
-          </IconButton>
-        </div>
-
-        <h2 className="text-lg font-semibold mb-4">
-          {itemToEdit ? "Edit Inventory Item" : "Add New Inventory Item"}
-        </h2>
-
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-          className="flex flex-col gap-4"
-        >
-          {/* Name + Category */}
-          <div className="flex gap-4">
-            <TextField
-              label="Name *"
-              name="name"
-              value={inventoryItem.name}
-              onChange={handleChange}
-              error={errors.name}
-              helperText={errors.name}
-              fullWidth
-            />
-            <TextField
-              label="Category (optional)"
-              name="category"
-              value={inventoryItem.category}
-              onChange={handleChange}
-              fullWidth
-              select
-            >
-              {categories.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
+        <div className="space-y-6">
+          {/* Close Button */}
+          <div className="flex justify-end">
+            <IconButton onClick={handleModalChange} size="small" className="hover:bg-gray-100">
+              <X size={20} />
+            </IconButton>
           </div>
 
-          {/* Description */}
-          <TextField
-            label="Description"
-            name="description"
-            value={inventoryItem.description}
-            onChange={handleChange}
-            multiline
-            rows={3}
-            fullWidth
-          />
+          {/* Header */}
+          <h2 className="text-2xl font-bold text-gray-800">
+            {itemToEdit ? "Edit Inventory Item" : "Add New Inventory Item"}
+          </h2>
 
-          {/* Price + Quantity */}
-          <div className="flex gap-4">
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            {/* Name + Category */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Name *"
+                name="name"
+                value={inventoryItem.name}
+                onChange={handleChange}
+                error={Boolean(errors.name)}
+                helperText={errors.name}
+                fullWidth
+              />
+              <TextField
+                label="Category (optional)"
+                name="category"
+                value={inventoryItem.category}
+                onChange={handleChange}
+                fullWidth
+                select
+              >
+                {categories.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    {item}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+
+            {/* Description */}
             <TextField
-              label="Price ($) *"
-              name="price"
-              type="number"
-              value={inventoryItem.price}
+              label="Description"
+              name="description"
+              value={inventoryItem.description}
               onChange={handleChange}
-              error={errors.price}
-              helperText={errors.price}
+              multiline
+              rows={3}
               fullWidth
             />
-            <TextField
-              label={
-                itemToEdit
-                  ? "Stock Adjustment (units) use negative values for reductions *"
-                  : "Initial stock (units) *"
-              }
-              name={itemToEdit ? "stockAdjustment" : "currentStock"}
-              type="number"
-              value={
-                itemToEdit
-                  ? inventoryItem.stockAdjustment
-                  : inventoryItem.currentStock
-              }
-              onChange={handleChange}
-              error={itemToEdit ? errors.stockAdjustment : errors.currentStock}
-              helperText={
-                itemToEdit ? errors.stockAdjustment : errors.currentStock
-              }
-              fullWidth
-            />
 
+            {/* Price + Quantity + Tax Rate */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Price ($) *"
+                name="price"
+                type="number"
+                value={inventoryItem.price}
+                onChange={handleChange}
+                error={Boolean(errors.price)}
+                helperText={errors.price}
+                fullWidth
+              />
+              <TextField
+                label={
+                  itemToEdit
+                    ? "Stock Adjustment (units) *"
+                    : "Initial stock (units) *"
+                }
+                name={itemToEdit ? "stockAdjustment" : "currentStock"}
+                type="number"
+                value={
+                  itemToEdit
+                    ? inventoryItem.stockAdjustment
+                    : inventoryItem.currentStock
+                }
+                onChange={handleChange}
+                error={Boolean(itemToEdit ? errors.stockAdjustment : errors.currentStock)}
+                helperText={
+                  itemToEdit ? errors.stockAdjustment : errors.currentStock
+                }
+                fullWidth
+              />
+            </div>
+
+            {/* Adjustment Reason (conditional) */}
             {quantityChanged && (
               <TextField
-                label="Adjustment Reason"
+                label="Adjustment Reason *"
                 name="adjustmentReason"
                 select
                 value={inventoryItem.adjustmentReason}
                 onChange={handleChange}
-                error={errors.adjustmentReason}
+                error={Boolean(errors.adjustmentReason)}
                 helperText={errors.adjustmentReason}
                 fullWidth
               >
@@ -339,65 +341,73 @@ export default function InventoryForm({ open, onSubmit, onClose, itemToEdit }) {
                 ))}
               </TextField>
             )}
-          </div>
 
-          <div className="flex gap-4">
-            <TextField
-              label="SKU"
-              name="sku"
-              value={inventoryItem.sku}
-              onChange={handleChange}
-              error={errors.sku}
-              helperText={errors.sku || "Optional: alphanumeric and unique"}
-              fullWidth
-            />
-            <TextField
-              label="Tax Rate (%)"
-              name="taxRate"
-              type="number"
-              value={inventoryItem.taxRate || ""}
-              onChange={handleChange}
-              error={errors.taxRate}
-              helperText={errors.taxRate || "Optional: Enter as a percentage"}
-              fullWidth
-            />
-            <TextField
-              label="Image URL"
-              name="imageUrl"
-              value={inventoryItem.imageUrl}
-              onChange={handleChange}
-              helperText="Optional: paste a hosted image URL"
-              fullWidth
-            />
-            <TextField
-              label="Low Stock"
-              name="lowStockThreshold"
-              type="number"
-              value={inventoryItem.lowStockThreshold}
-              onChange={handleChange}
-              error={errors.lowStockThreshold}
-              helperText={
-                errors.lowStockThreshold ||
-                "Optional: triggers low stock alerts"
-              }
-              fullWidth
-            />
-          </div>
+            {/* SKU + Tax Rate + Image URL + Low Stock */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <TextField
+                label="SKU"
+                name="sku"
+                value={inventoryItem.sku}
+                onChange={handleChange}
+                error={Boolean(errors.sku)}
+                helperText={errors.sku || "Optional"}
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label="Tax Rate (%)"
+                name="taxRate"
+                type="number"
+                value={inventoryItem.taxRate || ""}
+                onChange={handleChange}
+                error={Boolean(errors.taxRate)}
+                helperText={errors.taxRate || "Optional"}
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label="Image URL"
+                name="imageUrl"
+                value={inventoryItem.imageUrl}
+                onChange={handleChange}
+                helperText="Optional"
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label="Low Stock Threshold"
+                name="lowStockThreshold"
+                type="number"
+                value={inventoryItem.lowStockThreshold}
+                onChange={handleChange}
+                error={Boolean(errors.lowStockThreshold)}
+                helperText={errors.lowStockThreshold || "Optional"}
+                fullWidth
+                size="small"
+              />
+            </div>
 
-          <div className="flex justify-end gap-3 mt-2">
-            <Button variant="outlined" onClick={() => handleModalChange()}>
-              Cancel
-            </Button>
-            <Button
-              disabled={!unsavedChanges}
-              type="submit"
-              variant="contained"
-              color="primary"
-            >
-              {itemToEdit ? "Save Edits" : " Add Item"}
-            </Button>
-          </div>
-        </form>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button 
+                variant="outlined" 
+                onClick={() => handleModalChange()}
+                sx={{ px: 3 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={!unsavedChanges}
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{ px: 3 }}
+              >
+                {itemToEdit ? "Save Edits" : "Add Item"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </BasicModal>
     </>
   );

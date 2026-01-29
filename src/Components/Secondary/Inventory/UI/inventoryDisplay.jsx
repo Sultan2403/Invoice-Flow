@@ -69,139 +69,149 @@ export default function InventoryDisplay() {
   }, [feedback]);
 
   return (
-    <div className="flex flex-col w-full gap-4">
-      {/* Add Item Button */}
-
-      <h1 className="font-bold text-xl">Your Inventory</h1>
-
-      {/* Inventory List */}
-      <TextField
-        select
-        value={sortOrder}
-        onChange={(e) => setSortOrder(e.target.value)}
-        className="ml-2"
-        size="small"
-        label="Sort By"
-      >
-        <MenuItem value="name-asc">A-Z</MenuItem>
-        <MenuItem value="name-desc">Z-A</MenuItem>
-        <MenuItem value="price-asc">Price: Low → High</MenuItem>
-        <MenuItem value="price-desc">Price: High → Low</MenuItem>
-        <MenuItem value="qty-asc">Quantity: Low → High</MenuItem>
-        <MenuItem value="qty-desc">Quantity: High → Low</MenuItem>
-      </TextField>
-
-      <div className="flex gap-4">
-       <InvSelector invItems={inventory} setSearchTerm={setSearchTerm}/>
-        <TextField
-          select
-          fullWidth
-          label="Search By"
-          className="ml-2"
-          size="small"
-          value={searchBy}
-          onChange={(e) => setSearchBy(e.target.value)}
-        >
-          <MenuItem value="name">Name</MenuItem>
-          <MenuItem value="category">Category</MenuItem>
-          <MenuItem value="sku">SKU</MenuItem>
-          <MenuItem value="price">Price</MenuItem>
-          <MenuItem value="currentStock">Quantity / Stock</MenuItem>
-        </TextField>
-      </div>
-      {/* Inventory List */}
-      {inventory.length === 0 ? (
-        <p className="text-gray-500 text-center py-10">
-          No items in inventory.
-        </p>
-      ) : finalInventory.length === 0 ? (
-        <p className="text-gray-500 text-center py-10">
-          No items match your search.
-        </p>
-      ) : (
-        finalInventory.map((item, idx) => (
-          <InventoryCard
-            key={idx}
-            item={item}
-            onEdit={(item) => {
-              setEditItem(getInventoryItemById(item.id));
-              setFormOpen(true);
-            }}
-            onDelete={(item) => {
-              setItemToDelete(getInventoryItemById(item.id));
-            }}
-          />
-        ))
-      )}
-
-      <div className="flex justify-end">
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => setFormOpen(true)}
-        >
-          Add New Item
-        </button>
-      </div>
-
-      {/* Inventory Form Modal */}
-      <InventoryForm
-        open={formOpen}
-        itemToEdit={editItem}
-        onSubmit={() => {
-          setFeedback(true);
-          setEditItem(null);
-          setFormOpen(false);
-        }}
-        onClose={() => {
-          setFormOpen(false);
-          setEditItem(null);
-        }}
-      />
-
-      {/* Delete Confirmation */}
-      <BasicModal open={itemToDelete}>
-        <div className="flex flex-col gap-4">
-          <h3 className="font-semibold text-lg">Delete Item</h3>
-          <p>
-            Are you sure you want to delete{" "}
-            <strong>{itemToDelete?.name}</strong>? This action cannot be undone.
-          </p>
-
-          <div className="flex justify-end gap-3">
-            <button
-              className="px-4 py-2 border rounded"
-              onClick={() => setItemToDelete(null)}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-red-600 text-white rounded"
-              onClick={() => {
-                deleteInventoryItem(itemToDelete);
-                setItemToDelete(null);
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </BasicModal>
-
-      {/* Success Feedback Modal */}
-      <BasicModal open={feedback} onClose={handleCloseFeedback}>
-        <div className="flex flex-col items-center gap-4 p-6 text-center">
-          <Check size={48} className="text-green-600" />
-
-          <p className="text-lg font-semibold">Item saved successfully</p>
-
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800">Your Inventory</h1>
           <button
-            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            onClick={handleCloseFeedback}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+            onClick={() => setFormOpen(true)}
           >
-            OK
+            Add New Item
           </button>
         </div>
-      </BasicModal>
+
+        {/* Search & Filter Section */}
+        <div className="bg-white rounded-lg shadow-sm p-4 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="sm:col-span-2">
+              <InvSelector invItems={inventory} setSearchTerm={setSearchTerm} />
+            </div>
+            <TextField
+              select
+              fullWidth
+              label="Search By"
+              size="small"
+              value={searchBy}
+              onChange={(e) => setSearchBy(e.target.value)}
+            >
+              <MenuItem value="name">Name</MenuItem>
+              <MenuItem value="category">Category</MenuItem>
+              <MenuItem value="sku">SKU</MenuItem>
+              <MenuItem value="price">Price</MenuItem>
+              <MenuItem value="currentStock">Quantity / Stock</MenuItem>
+            </TextField>
+          </div>
+
+          <TextField
+            select
+            fullWidth
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            size="small"
+            label="Sort By"
+          >
+            <MenuItem value="name-asc">A-Z</MenuItem>
+            <MenuItem value="name-desc">Z-A</MenuItem>
+            <MenuItem value="price-asc">Price: Low → High</MenuItem>
+            <MenuItem value="price-desc">Price: High → Low</MenuItem>
+            <MenuItem value="qty-asc">Quantity: Low → High</MenuItem>
+            <MenuItem value="qty-desc">Quantity: High → Low</MenuItem>
+          </TextField>
+        </div>
+
+        {/* Inventory List or Empty State */}
+        {inventory.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <p className="text-gray-500 text-lg">No items in inventory.</p>
+            <p className="text-gray-400 text-sm mt-2">
+              Start by adding your first product.
+            </p>
+          </div>
+        ) : finalInventory.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+            <p className="text-gray-500 text-lg">No items match your search.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {finalInventory.map((item, idx) => (
+              <InventoryCard
+                key={idx}
+                item={item}
+                onEdit={(item) => {
+                  setEditItem(getInventoryItemById(item.id));
+                  setFormOpen(true);
+                }}
+                onDelete={(item) => {
+                  setItemToDelete(getInventoryItemById(item.id));
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Inventory Form Modal */}
+        <InventoryForm
+          open={formOpen}
+          itemToEdit={editItem}
+          onSubmit={() => {
+            setFeedback(true);
+            setEditItem(null);
+            setFormOpen(false);
+          }}
+          onClose={() => {
+            setFormOpen(false);
+            setEditItem(null);
+          }}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <BasicModal open={itemToDelete}>
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">Delete Item</h3>
+            <p className="text-gray-600">
+              Are you sure you want to delete{" "}
+              <strong>{itemToDelete?.name}</strong>? This action cannot be
+              undone.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                onClick={() => setItemToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+                onClick={() => {
+                  deleteInventoryItem(itemToDelete);
+                  setItemToDelete(null);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </BasicModal>
+
+        {/* Success Feedback Modal */}
+        <BasicModal open={feedback} onClose={handleCloseFeedback}>
+          <div className="flex flex-col items-center gap-4 p-6 text-center">
+            <Check size={48} className="text-green-600" />
+            <p className="text-lg font-semibold text-gray-800">
+              Item saved successfully
+            </p>
+            <button
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+              onClick={handleCloseFeedback}
+            >
+              Close
+            </button>
+          </div>
+        </BasicModal>
+      </div>
     </div>
   );
 }
